@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.dashboard-section{padding:5rem 0;background:var(--off-white);}
+.dash-page-header{background:var(--charcoal);padding:3.5rem 0;position:relative;overflow:hidden;}
+.dash-page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,0.06),transparent 55%);}
+.dash-page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;}
+.dash-eyebrow{font-size:0.58rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
+.dash-title{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--cream);letter-spacing:0.04em;}
+.profile-form-card{background:var(--cream);border:1px solid var(--border-light);}
+.profile-form-header{padding:1.5rem 2.5rem;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;}
+.profile-form-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-light);}
+.profile-pic-preview{width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid var(--border-light);}
+.profile-pic-placeholder{width:88px;height:88px;border-radius:50%;background:var(--off-white);border:2px solid var(--border-light);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2rem;color:var(--text-faint);}
+.profile-form-body{padding:2.5rem;}
+.form-section-label{font-size:0.58rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);padding-bottom:0.8rem;border-bottom:1px solid var(--border-light);margin-bottom:2rem;margin-top:2.5rem;}
+.form-section-label:first-child{margin-top:0;}
+/* Override Django form widget styles */
+.profile-form-body input[type="text"],
+.profile-form-body input[type="email"],
+.profile-form-body input[type="tel"],
+.profile-form-body input[type="password"],
+.profile-form-body input[type="file"],
+.profile-form-body select{
+  display:block;width:100%;border:none;border-bottom:1px solid var(--border-mid);border-radius:0;
+  padding:0.8rem 0;font-size:0.88rem;color:var(--text-dark);background:transparent;
+  font-family:var(--font-body);letter-spacing:0.04em;transition:border-color 0.25s;
+  box-shadow:none;-webkit-appearance:none;appearance:none;
+}
+.profile-form-body input:focus,.profile-form-body select:focus{border-bottom-color:var(--gold);outline:none;}
+.profile-form-body input::placeholder{color:var(--text-faint);font-weight:300;}
+.profile-form-body label{font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-light);margin-bottom:0;}
+.profile-form-body .form-group{margin-bottom:1.8rem;}
+.profile-save-btn{padding:1rem 3rem;font-size:0.68rem;letter-spacing:0.25em;}
+</style>
+
+<div class="dash-page-header">
+  <div class="container">
+    <div class="dash-eyebrow">Client Portal</div>
+    <div class="dash-title">Edit Profile</div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="container">
+    {% include 'includes/alerts.html' %}
+    <div class="row">
+      {% include 'includes/dashboard_sidebar.html' %}
+
+      <main class="col-md-9">
+        <div class="profile-form-card stagger-item">
+          <div class="profile-form-header">
+            <div class="profile-form-title">Personal Information</div>
+            {% if userprofile.profile_picture %}
+            <img src="{{ userprofile.profile_picture.url }}" alt="Profile" class="profile-pic-preview">
+            {% else %}
+            <div class="profile-pic-placeholder"><i class="fa fa-user" style="font-size:1.5rem;"></i></div>
+            {% endif %}
+          </div>
+
+          <div class="profile-form-body">
+            <form action="{% url 'edit_profile' %}" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+
+              <div class="form-section-label">Personal Details</div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>First Name</label>
+                  {{ user_form.first_name }}
+                </div>
+                <div class="form-group col-md-6">
+                  <label>Last Name</label>
+                  {{ user_form.last_name }}
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>Phone Number</label>
+                  {{ user_form.phone_number }}
+                </div>
+                <div class="form-group col-md-6">
+                  <label>Profile Picture</label>
+                  {{ profile_form.profile_picture }}
+                </div>
+              </div>
+
+              <div class="form-section-label">Address</div>
+              <div class="form-group">
+                <label>Address Line 1</label>
+                {{ profile_form.address_line_1 }}
+              </div>
+              <div class="form-group">
+                <label>Address Line 2</label>
+                {{ profile_form.address_line_2 }}
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label>City</label>
+                  {{ profile_form.city }}
+                </div>
+                <div class="form-group col-md-4">
+                  <label>State / Province</label>
+                  {{ profile_form.state }}
+                </div>
+                <div class="form-group col-md-4">
+                  <label>Country</label>
+                  {{ profile_form.country }}
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--border-light);padding-top:2rem;margin-top:1rem;">
+                <button type="submit" class="btn btn-primary profile-save-btn">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

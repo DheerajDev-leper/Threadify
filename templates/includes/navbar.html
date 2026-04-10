@@ -1,0 +1,191 @@
+{% load static %}
+
+<style>
+/* ── LUXURY NAVBAR ─────────────────────────────────────────── */
+.section-header{position:sticky;top:0;z-index:1000;background:var(--charcoal);animation:navSlideDown 0.6s var(--ease-luxury) both;}
+@keyframes navSlideDown{from{transform:translateY(-100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* Top utility bar */
+.topbar{background:var(--black);border-bottom:1px solid rgba(201,168,76,0.15);}
+.topbar-inner{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;}
+.topbar-left,.topbar-right{display:flex;gap:1.5rem;align-items:center;}
+.topbar a{font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.5);transition:color var(--t-fast);display:flex;align-items:center;gap:0.4rem;}
+.topbar a:hover{color:var(--gold);}
+.topbar-divider{width:1px;height:12px;background:rgba(255,255,255,0.12);}
+
+/* Gold line accent under top bar */
+.gold-top-line{height:1px;background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold) 70%,transparent);opacity:0.25;}
+
+/* Main nav */
+.header-main{background:var(--charcoal);padding:0;}
+.nav-inner{display:flex;align-items:center;height:90px;gap:2rem;}
+
+/* Logo */
+.brand-wrap{display:flex;align-items:center;flex-shrink:0;}
+.brand-wrap .logo{max-height:38px;filter:brightness(0) invert(1);transition:filter var(--t-fast),transform var(--t-mid);}
+.brand-wrap:hover .logo{filter:brightness(0) saturate(100%) invert(68%) sepia(51%) saturate(464%) hue-rotate(2deg) brightness(95%) contrast(91%);transform:scale(1.03);}
+
+/* Wordmark fallback (if logo doesn't exist) */
+.brand-wordmark{font-family:var(--font-title);font-size:1.2rem;letter-spacing:0.3em;color:var(--cream);text-transform:uppercase;}
+.brand-wordmark span{color:var(--gold);}
+
+/* Nav links */
+.nav-links{display:flex;align-items:center;gap:0;flex:1;justify-content:center;}
+.nav-links .nav-item{position:relative;}
+.nav-links .nav-link{font-family:var(--font-body);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.7)!important;padding:2rem 1.2rem!important;display:flex;align-items:center;gap:0.4rem;transition:color var(--t-fast)!important;position:relative;}
+.nav-links .nav-link::after{content:'';position:absolute;bottom:0;left:1.2rem;right:1.2rem;height:1px;background:var(--gold);transform:scaleX(0);transition:transform var(--t-mid);}
+.nav-links .nav-link:hover,.nav-links .nav-item.active .nav-link{color:var(--gold)!important;}
+.nav-links .nav-link:hover::after{transform:scaleX(1);}
+
+/* Category dropdown trigger */
+.cat-toggle{background:transparent;border:1px solid rgba(201,168,76,0.3);color:rgba(255,255,255,0.7)!important;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.6rem 1.2rem!important;transition:all var(--t-fast);cursor:pointer;display:flex;align-items:center;gap:0.5rem;border-radius:0;}
+.cat-toggle:hover{border-color:var(--gold);color:var(--gold)!important;background:rgba(201,168,76,0.06);}
+.cat-toggle i{font-size:0.55rem;color:var(--gold);}
+
+/* Dropdown */
+.luxury-dropdown{border:1px solid rgba(201,168,76,0.15);border-radius:0;box-shadow:0 30px 80px rgba(0,0,0,0.5);background:var(--carbon);min-width:220px;padding:0.8rem 0;animation:dropFade 0.3s var(--ease-luxury);}
+.luxury-dropdown .dropdown-item{font-size:0.62rem;letter-spacing:0.2em;color:rgba(255,255,255,0.55);padding:0.9rem 1.6rem;border-bottom:1px solid rgba(255,255,255,0.04);transition:all var(--t-fast);}
+.luxury-dropdown .dropdown-item:last-child{border-bottom:none;}
+.luxury-dropdown .dropdown-item:hover{background:rgba(201,168,76,0.08);color:var(--gold);padding-left:2rem;}
+
+/* Store link */
+.store-link{font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.55);padding:0.6rem 1rem;border-bottom:1px solid rgba(201,168,76,0.2);transition:all var(--t-fast);}
+.store-link:hover{color:var(--gold);}
+
+/* Search */
+.nav-search{flex:1;max-width:280px;}
+.nav-search .input-group{border-bottom:1px solid rgba(255,255,255,0.15);transition:border-color var(--t-fast);}
+.nav-search .input-group:focus-within{border-bottom-color:var(--gold);}
+.nav-search .form-control{background:transparent!important;border:none!important;border-bottom:none!important;color:rgba(255,255,255,0.8)!important;font-size:0.75rem;padding:0.4rem 0;letter-spacing:0.08em;}
+.nav-search .form-control::placeholder{color:rgba(255,255,255,0.25);font-size:0.7rem;letter-spacing:0.12em;}
+.nav-search .btn{background:transparent;border:none;color:var(--gold);padding:0.4rem 0.6rem;font-size:0.8rem;letter-spacing:0;text-transform:none;}
+.nav-search .btn:hover{color:var(--gold-light);}
+
+/* User area */
+.nav-user{display:flex;align-items:center;gap:1.5rem;flex-shrink:0;}
+.user-widget small{display:block;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+.user-widget a{font-size:0.65rem;letter-spacing:0.15em;color:rgba(255,255,255,0.65);transition:color var(--t-fast);}
+.user-widget a:hover{color:var(--gold);}
+.user-widget .sep{color:rgba(255,255,255,0.15);margin:0 4px;font-size:0.7rem;}
+
+/* Cart */
+.cart-trigger{position:relative;display:flex;align-items:center;gap:0.5rem;padding:0.5rem;transition:color var(--t-fast);}
+.cart-trigger .cart-icon-wrap{width:36px;height:36px;border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);color:rgba(255,255,255,0.7);font-size:0.9rem;}
+.cart-trigger:hover .cart-icon-wrap{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,0.08);}
+.cart-trigger .notify{position:absolute;top:-4px;right:-4px;background:var(--gold);color:var(--black);font-size:0.52rem;min-width:16px;height:16px;border-radius:0;display:flex;align-items:center;justify-content:center;font-weight:600;letter-spacing:0;}
+
+/* Divider */
+.nav-divider{width:1px;height:28px;background:rgba(255,255,255,0.1);}
+
+/* Mobile toggler */
+.navbar-toggler{border:1px solid rgba(201,168,76,0.3);border-radius:0;padding:0.4rem 0.7rem;}
+.navbar-toggler-icon{filter:brightness(0) invert(1);}
+
+/* Bottom gold line */
+.nav-bottom-line{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.4) 20%,rgba(201,168,76,0.4) 80%,transparent);}
+</style>
+
+<header class="section-header">
+  <!-- Top utility bar -->
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <div class="topbar-left">
+          <a href="#"><i class="fa fa-globe"></i> English</a>
+          <div class="topbar-divider"></div>
+          <a href="#"><i class="fa fa-dollar"></i> USD</a>
+        </div>
+        <div class="topbar-right">
+          <a href="#"><i class="fa fa-envelope-o"></i> Contact</a>
+          <div class="topbar-divider"></div>
+          <a href="#"><i class="fa fa-phone"></i> +1 800 GREATKART</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="gold-top-line"></div>
+
+  <!-- Main navigation -->
+  <div class="header-main">
+    <div class="container">
+      <nav class="navbar navbar-expand-lg p-0" style="height:90px;">
+        <button class="navbar-toggler mr-3" type="button" data-toggle="collapse" data-target="#luxNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Logo -->
+        <a href="{% url 'home' %}" class="brand-wrap mr-4">
+          <img class="logo" src="{% static 'images/logo.png' %}" alt="GreatKart" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+          <div class="brand-wordmark" style="display:none;">Great<span>Kart</span></div>
+        </a>
+
+        <div class="collapse navbar-collapse" id="luxNavbar">
+          <div class="d-flex align-items-center w-100 flex-wrap flex-lg-nowrap" style="gap:1.5rem;">
+
+            <!-- Category dropdown -->
+            <div class="dropdown flex-shrink-0">
+              <button class="cat-toggle dropdown-toggle" type="button" data-toggle="dropdown">
+                <i class="fa fa-th-large"></i> Collections
+              </button>
+              <div class="dropdown-menu luxury-dropdown">
+                <a class="dropdown-item" href="{% url 'store' %}">All Products</a>
+                {% for link in links %}
+                <a class="dropdown-item" href="{{ link.get_url }}">{{ link.category_name }}</a>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Store link -->
+            <a href="{% url 'store' %}" class="store-link flex-shrink-0">Store</a>
+
+            <!-- Search -->
+            <div class="nav-search flex-grow-1">
+              <form action="{% url 'search' %}" method="GET">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Search the collection" name="keyword">
+                  <div class="input-group-append">
+                    <button class="btn" type="submit"><i class="fa fa-search"></i></button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- User + Cart -->
+            <div class="nav-user ml-auto flex-shrink-0">
+              {% if user.id is None %}
+              <div class="user-widget">
+                <small>Welcome</small>
+                <div>
+                  <a href="{% url 'login' %}">Sign In</a>
+                  <span class="sep">|</span>
+                  <a href="{% url 'register' %}">Register</a>
+                </div>
+              </div>
+              {% else %}
+              <div class="user-widget">
+                <small>Welcome back</small>
+                <div>
+                  <a href="{% url 'dashboard' %}">{{ user.first_name }}</a>
+                  <span class="sep">|</span>
+                  <a href="{% url 'logout' %}">Sign Out</a>
+                </div>
+              </div>
+              {% endif %}
+
+              <div class="nav-divider d-none d-lg-block"></div>
+
+              <a href="{% url 'cart' %}" class="cart-trigger">
+                <div class="cart-icon-wrap">
+                  <i class="fa fa-shopping-bag"></i>
+                </div>
+                <span class="notify">{{ cart_count }}</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <div class="nav-bottom-line"></div>
+</header>

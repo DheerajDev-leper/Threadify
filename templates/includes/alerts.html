@@ -1,0 +1,17 @@
+{% if messages %}
+  {% for message in messages %}
+  <div id="message-{{ forloop.counter }}" style="margin:1rem 0;">
+    <div {% if message.tags %} class="alert alert-{{ message.tags }}" {% endif %} role="alert" style="display:flex;align-items:flex-start;gap:0.8rem;">
+      <button type="button" class="close ml-auto" data-dismiss="alert" aria-label="Close" style="margin-left:auto!important;order:2;">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div style="order:1;flex:1;">
+        {% if message.tags == 'success' %}<i class="fa fa-check mr-2" style="color:var(--gold);"></i>{% endif %}
+        {% if message.tags == 'danger' %}<i class="fa fa-exclamation-circle mr-2" style="color:#8b2e2e;"></i>{% endif %}
+        {% if message.tags == 'warning' %}<i class="fa fa-exclamation-triangle mr-2" style="color:var(--gold);"></i>{% endif %}
+        {{ message }}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% endif %}

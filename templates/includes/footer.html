@@ -1,0 +1,132 @@
+<style>
+/* ── LUXURY FOOTER ─────────────────────────────────────────── */
+.section-footer{background:var(--charcoal);position:relative;overflow:hidden;}
+.section-footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold) 70%,transparent);opacity:0.35;}
+
+.footer-upper{padding:4rem 0 3rem;}
+.footer-brand{margin-bottom:1.5rem;}
+.footer-brand img{max-height:32px;filter:brightness(0) invert(1);opacity:0.7;}
+.footer-brand .footer-wordmark{font-family:var(--font-title);font-size:1.1rem;letter-spacing:0.35em;color:rgba(255,255,255,0.5);}
+.footer-brand .footer-wordmark span{color:var(--gold);}
+.footer-tagline{font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-top:0.5rem;}
+
+.footer-col-title{font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;font-weight:500;}
+.footer-links{list-style:none;padding:0;margin:0;}
+.footer-links li{margin-bottom:0.6rem;}
+.footer-links a{font-size:0.72rem;letter-spacing:0.1em;color:rgba(255,255,255,0.4);transition:all var(--t-fast);display:inline-block;}
+.footer-links a:hover{color:var(--gold);transform:translateX(4px);}
+
+.footer-contact-item{display:flex;align-items:flex-start;gap:0.8rem;margin-bottom:0.9rem;}
+.footer-contact-item i{color:var(--gold);font-size:0.75rem;margin-top:2px;flex-shrink:0;opacity:0.8;}
+.footer-contact-item span{font-size:0.72rem;color:rgba(255,255,255,0.4);letter-spacing:0.06em;line-height:1.6;}
+
+.footer-divider{height:1px;background:rgba(255,255,255,0.06);margin:0 0 1.5rem;}
+
+.footer-bottom{padding:1.4rem 0;}
+.footer-copy{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.22);}
+.footer-cards{display:flex;align-items:center;gap:0.8rem;}
+.footer-cards .fab{font-size:1.5rem;color:rgba(255,255,255,0.2);transition:color var(--t-fast);}
+.footer-cards .fab:hover{color:var(--gold);}
+.footer-legal{font-size:0.6rem;letter-spacing:0.15em;color:rgba(255,255,255,0.2);display:flex;gap:1.5rem;}
+.footer-legal a{color:rgba(255,255,255,0.25);transition:color var(--t-fast);}
+.footer-legal a:hover{color:var(--gold);}
+</style>
+{% load static %}
+<footer class="section-footer border-top">
+  <div class="container">
+    <div class="footer-upper">
+      <div class="row">
+
+        <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+          <div class="footer-brand">
+            <img src="{% static 'images/favicon.ico' %}" alt="GreatKart" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+            <div class="footer-wordmark" style="display:none;">Great<span>Kart</span></div>
+          </div>
+          <p class="footer-tagline">Curated Excellence. Delivered.</p>
+          <p style="font-size:0.78rem;color:rgba(255,255,255,0.3);margin-top:1.2rem;line-height:1.9;font-weight:300;max-width:280px;">
+            We believe every acquisition should feel like a rare discovery — objects worthy of your attention, crafted to endure.
+          </p>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6 mb-4 mb-lg-0">
+          <div class="footer-col-title">Collections</div>
+          <ul class="footer-links">
+            <li><a href="{% url 'store' %}">All Products</a></li>
+            {% for link in links %}
+            <li><a href="{{ link.get_url }}">{{ link.category_name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6 mb-4 mb-lg-0">
+          <div class="footer-col-title">Client Services</div>
+          <ul class="footer-links">
+            <li><a href="#">Bespoke Orders</a></li>
+            <li><a href="#">Shipping & Returns</a></li>
+            <li><a href="#">Authentication</a></li>
+            <li><a href="#">Care & Maintenance</a></li>
+            <li><a href="#">Private Appointments</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+          <div class="footer-col-title">Atelier</div>
+          <div class="footer-contact-item">
+            <i class="fa fa-map-marker"></i>
+            <span>742 Maison Boulevard<br>New York, NY 10001</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fa fa-phone"></i>
+            <span>+1 800 GREATKART</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fa fa-envelope-o"></i>
+            <span>atelier@greatkart.com</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fa fa-clock-o"></i>
+            <span>Mon – Sat, 10:00 – 19:00</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-bottom">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <p class="footer-copy">&copy; 2024 GreatKart. All rights reserved.</p>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="footer-legal justify-content-center">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Accessibility</a>
+          </div>
+        </div>
+        <div class="col-md-4 text-right">
+          <div class="footer-cards justify-content-end">
+            <i class="fab fa-cc-visa"></i>
+            <i class="fab fa-cc-mastercard"></i>
+            <i class="fab fa-cc-paypal"></i>
+            <i class="fab fa-cc-amex"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  $('.thumb a').click(function(e){
+    e.preventDefault();
+    $('.mainImage img').attr('src', $(this).attr("href"));
+  });
+});
+</script>
+</body>
+</html>

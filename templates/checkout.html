@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+.checkout-section{padding:5rem 0;}
+.checkout-eyebrow{font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
+.checkout-heading{font-family:var(--font-display);font-size:3rem;font-weight:300;color:var(--text-dark);margin-bottom:0.5rem;letter-spacing:0.04em;}
+.checkout-sub{font-size:0.72rem;letter-spacing:0.15em;color:var(--text-faint);margin-bottom:3rem;}
+/* Steps */
+.steps-bar{display:flex;align-items:center;margin-bottom:4rem;}
+.step-node{display:flex;align-items:center;gap:0.8rem;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-faint);}
+.step-node.active{color:var(--gold);}
+.step-num{width:26px;height:26px;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:0.62rem;flex-shrink:0;transition:all var(--t-fast);}
+.step-node.active .step-num{background:var(--gold);border-color:var(--gold);color:var(--black);}
+.step-connector{flex:1;height:1px;background:var(--border-light);margin:0 1rem;max-width:60px;}
+/* Form section */
+.form-section-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border-light);}
+.billing-card{background:var(--cream);border:1px solid var(--border-light);padding:3rem;}
+/* Order panel */
+.order-panel{background:var(--charcoal);}
+.order-panel-inner{padding:2.5rem;}
+.order-panel-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;}
+.order-item{display:flex;gap:1rem;padding:1.2rem 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.order-item:last-child{border-bottom:none;}
+.order-item img{width:60px;height:60px;object-fit:cover;border:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+.order-item-name{font-family:var(--font-display);font-size:0.95rem;font-weight:400;color:rgba(255,255,255,0.75);letter-spacing:0.02em;}
+.order-item-var{font-size:0.62rem;letter-spacing:0.15em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-top:3px;}
+.order-item-qty{font-size:0.72rem;color:rgba(255,255,255,0.35);letter-spacing:0.1em;margin-left:auto;flex-shrink:0;}
+.order-item-price{font-size:0.82rem;color:var(--gold);letter-spacing:0.08em;flex-shrink:0;}
+.place-order-btn{width:100%;padding:1.2rem;font-size:0.72rem;letter-spacing:0.25em;margin-top:2rem;}
+.secure-note{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.2);text-align:center;margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+</style>
+
+<div class="container checkout-section">
+  <div class="checkout-eyebrow">Secure Checkout</div>
+  <h1 class="checkout-heading">Complete Your Order</h1>
+  <p class="checkout-sub">All transactions are encrypted and secured</p>
+
+  <div class="steps-bar">
+    <div class="step-node active"><span class="step-num">1</span> Billing</div>
+    <div class="step-connector"></div>
+    <div class="step-node"><span class="step-num">2</span> Payment</div>
+    <div class="step-connector"></div>
+    <div class="step-node"><span class="step-num">3</span> Confirmation</div>
+  </div>
+
+  <div class="row">
+    <!-- Billing Form -->
+    <div class="col-lg-7 mb-4 mb-lg-0">
+      <form action="{% url 'place_order' %}" method="POST" id="checkoutForm">
+        {% csrf_token %}
+        <div class="billing-card">
+          <div class="form-section-title">Billing Address</div>
+          <div class="form-row">
+            <div class="col form-group">
+              <label>First Name</label>
+              <input type="text" name="first_name" class="form-control" placeholder="Alexander" required>
+            </div>
+            <div class="col form-group">
+              <label>Last Name</label>
+              <input type="text" name="last_name" class="form-control" placeholder="Sterling" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col form-group">
+              <label>Email Address</label>
+              <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+            </div>
+            <div class="col form-group">
+              <label>Phone Number</label>
+              <input type="text" name="phone" class="form-control" placeholder="+1 000 000 0000" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col form-group">
+              <label>Address Line 1</label>
+              <input type="text" name="address_line_1" class="form-control" placeholder="Street address" required>
+            </div>
+            <div class="col form-group">
+              <label>Address Line 2 <span style="color:var(--text-faint);letter-spacing:0;">(optional)</span></label>
+              <input type="text" name="address_line_2" class="form-control" placeholder="Suite, apt, floor">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col form-group">
+              <label>City</label>
+              <input type="text" name="city" class="form-control" placeholder="New York" required>
+            </div>
+            <div class="col form-group">
+              <label>State / Province</label>
+              <input type="text" name="state" class="form-control" placeholder="NY" required>
+            </div>
+            <div class="col form-group">
+              <label>Country</label>
+              <input type="text" name="country" class="form-control" placeholder="United States" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Order Note <span style="color:var(--text-faint);letter-spacing:0;">(optional)</span></label>
+            <textarea name="order_note" class="form-control" rows="2" placeholder="Special requests or delivery instructions..."></textarea>
+          </div>
+
+          <button type="submit" name="submit" class="btn btn-primary place-order-btn">
+            Place Order &nbsp; <i class="fa fa-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-5">
+      <div class="order-panel">
+        <div class="order-panel-inner">
+          <div class="order-panel-title">Your Order</div>
+          {% for item in cart_items %}
+          <div class="order-item">
+            <img src="{{ item.product.Image.url }}" alt="{{ item.product.product_name }}">
+            <div style="flex:1;min-width:0;">
+              <div class="order-item-name">{{ item.product.product_name }}</div>
+              {% if item.variation.all %}
+              <div class="order-item-var">
+                {% for variation in item.variation.all %}{{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}{% if not forloop.last %} · {% endif %}{% endfor %}
+              </div>
+              {% endif %}
+              <div style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:4px;letter-spacing:0.12em;">Qty: {{ item.quantity }}</div>
+            </div>
+            <div class="order-item-price">${{ item.sub_total }}</div>
+          </div>
+          {% endfor %}
+          <div style="border-top:1px solid rgba(201,168,76,0.2);padding-top:1.2rem;margin-top:0.5rem;">
+            <div class="summary-line" style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35);letter-spacing:0.1em;margin-bottom:0.5rem;">
+              <span>Subtotal</span><span style="color:rgba(255,255,255,0.55);">${{ total }}</span>
+            </div>
+            <div class="summary-line" style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.35);letter-spacing:0.1em;margin-bottom:0.5rem;">
+              <span>Tax</span><span style="color:rgba(255,255,255,0.55);">${{ tax }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:1rem;">
+              <span style="font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:rgba(255,255,255,0.35);">Total</span>
+              <span style="font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--gold);">${{ grand_total }}</span>
+            </div>
+          </div>
+          <div class="secure-note"><i class="fa fa-lock"></i> Secured by SSL Encryption</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<style>
+.product-detail-wrap{padding:5rem 0;}
+/* Left gallery */
+.product-gallery{position:sticky;top:110px;}
+.gallery-main{height:580px;background:var(--off-white);overflow:hidden;position:relative;cursor:zoom-in;}
+.gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform var(--t-slow);}
+.gallery-main:hover img{transform:scale(1.06);}
+.gallery-main::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity var(--t-mid);}
+.gallery-main:hover::after{opacity:1;}
+.gallery-thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.gallery-thumbs a img{width:76px;height:76px;object-fit:cover;border:1px solid var(--border-light);transition:all var(--t-fast);cursor:pointer;filter:grayscale(0.2);}
+.gallery-thumbs a img:hover{border-color:var(--gold);filter:none;}
+
+/* Right product info */
+.product-info{padding-left:3rem;}
+.product-breadcrumb{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;}
+.product-breadcrumb a{color:var(--text-faint);transition:color var(--t-fast);}
+.product-breadcrumb a:hover{color:var(--gold);}
+.product-breadcrumb span{margin:0 0.5rem;color:var(--border-mid);}
+.product-name{font-family:var(--font-display);font-size:3rem;font-weight:300;line-height:1.1;letter-spacing:0.04em;color:var(--text-dark);margin-bottom:1rem;}
+.product-rating-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border-light);}
+.product-rating-row .review-count{font-size:0.68rem;letter-spacing:0.15em;color:var(--text-faint);}
+.product-price{font-family:var(--font-display);font-size:2.2rem;font-weight:300;color:var(--gold-dark);letter-spacing:0.06em;margin-bottom:1.5rem;}
+.product-description{font-size:0.85rem;color:var(--text-light);line-height:2;font-weight:300;padding-bottom:2rem;border-bottom:1px solid var(--border-light);margin-bottom:2rem;}
+
+/* Variant selectors */
+.variant-group{margin-bottom:2rem;}
+.variant-group .variant-label{font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.8rem;display:block;}
+.variant-group select{width:100%;border:none;border-bottom:1px solid var(--border-mid);padding:0.8rem 0;font-family:var(--font-display);font-size:1rem;font-weight:300;color:var(--text-dark);background:transparent;-webkit-appearance:none;cursor:pointer;letter-spacing:0.04em;transition:border-color var(--t-fast);}
+.variant-group select:focus{border-bottom-color:var(--gold);outline:none;}
+
+/* Add to cart */
+.add-cart-btn{width:100%;padding:1.1rem;font-size:0.72rem;letter-spacing:0.25em;margin-bottom:1rem;}
+.product-note{font-size:0.65rem;letter-spacing:0.1em;color:var(--text-faint);text-align:center;line-height:1.8;}
+.product-note i{color:var(--gold);margin-right:4px;}
+
+/* Product perks */
+.product-perks{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border-light);}
+.perk-item{display:flex;align-items:flex-start;gap:0.8rem;}
+.perk-icon{color:var(--gold);font-size:0.9rem;margin-top:2px;flex-shrink:0;}
+.perk-text{font-size:0.7rem;letter-spacing:0.08em;color:var(--text-light);line-height:1.6;}
+.perk-title{display:block;font-weight:500;color:var(--text-mid);margin-bottom:0.2rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.15em;}
+
+/* Out of stock */
+.out-of-stock-notice{border:1px solid rgba(139,46,46,0.2);background:rgba(139,46,46,0.03);padding:1rem 1.4rem;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b2e2e;text-align:center;}
+
+/* ── Reviews ──────────────────────────────────────────────── */
+.reviews-section{padding:5rem 0;background:var(--off-white);}
+.reviews-header{margin-bottom:3rem;}
+.reviews-header .section-label{font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
+.review-form-wrap{background:var(--cream);border:1px solid var(--border-light);padding:3rem;margin-bottom:3rem;}
+.review-form-title{font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--text-dark);margin-bottom:0.5rem;}
+.review-form-sub{font-size:0.72rem;letter-spacing:0.1em;color:var(--text-faint);margin-bottom:2rem;}
+.review-card{background:var(--cream);border:1px solid var(--border-light);border-left:2px solid var(--gold);padding:2rem 2.2rem;margin-bottom:1.5px;transition:box-shadow var(--t-mid);}
+.review-card:hover{box-shadow:var(--shadow-card);}
+.reviewer-name{font-family:var(--font-display);font-size:1.1rem;font-weight:400;color:var(--text-dark);}
+.review-date{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-faint);}
+.review-subject{font-size:0.82rem;font-weight:500;color:var(--text-mid);margin:0.8rem 0 0.4rem;letter-spacing:0.04em;}
+.review-text{font-size:0.82rem;color:var(--text-light);line-height:1.9;font-weight:300;}
+.login-prompt{border:1px solid var(--border-light);padding:1.5rem 2rem;font-size:0.78rem;color:var(--text-light);letter-spacing:0.06em;}
+.login-prompt a{color:var(--gold);border-bottom:1px solid rgba(201,168,76,0.3);}
+
+/* Rating stars header */
+.rating-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;}
+.rating-big-num{font-family:var(--font-display);font-size:4rem;font-weight:300;color:var(--gold-dark);line-height:1;}
+
+
+
+
+
+</style>
+
+<!-- Product Detail -->
+<div class="container product-detail-wrap">
+  <div class="row">
+
+    <!-- Gallery -->
+    <div class="col-md-6">
+      <div class="product-gallery">
+        <div class="gallery-main mainImage">
+          <img src="{{ single_product.Image.url }}" alt="{{ single_product.product_name }}">
+        </div>
+        <ul class="thumbs gallery-thumbs" style="list-style:none;padding:0;">
+          <li>
+            <a href="{{ single_product.images.url }}" target="mainImage">
+              <img src="{{ single_product.images.url }}" alt="">
+            </a>
+            {% for image in product_gallery %}
+            <a href="{{ image.image.url }}" class="thumb-item" target="mainImage">
+              <img src="{{ image.image.url }}" alt="">
+            </a>
+            {% endfor %}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="col-md-6">
+      <div class="product-info">
+        <div class="product-breadcrumb">
+          <a href="{% url 'home' %}">Home</a>
+          <span>·</span>
+          <a href="{% url 'store' %}">Collections</a>
+          <span>·</span>
+          {{ single_product.product_name }}
+        </div>
+
+        <h1 class="product-name">{{ single_product.product_name }}</h1>
+
+        <div class="product-rating-row">
+          <div class="rating-star">
+            <span>
+              <i class="fa fa-star{% if single_product.averageReview < 0.5 %}-o{% elif single_product.averageReview >= 0.5 and single_product.averageReview < 1 %}-half-o {% endif %}"></i>
+              <i class="fa fa-star{% if single_product.averageReview < 1.5 %}-o{% elif single_product.averageReview >= 1.5 and single_product.averageReview < 2 %}-half-o {% endif %}"></i>
+              <i class="fa fa-star{% if single_product.averageReview < 2.5 %}-o{% elif single_product.averageReview >= 2.5 and single_product.averageReview < 3 %}-half-o {% endif %}"></i>
+              <i class="fa fa-star{% if single_product.averageReview < 3.5 %}-o{% elif single_product.averageReview >= 3.5 and single_product.averageReview < 4 %}-half-o {% endif %}"></i>
+              <i class="fa fa-star{% if single_product.averageReview < 4.5 %}-o{% elif single_product.averageReview >= 4.5 and single_product.averageReview < 5 %}-half-o {% endif %}"></i>
+            </span>
+          </div>
+          <span class="review-count">{{ single_product.countReview }} Reviews</span>
+        </div>
+
+        <div class="product-price">${{ single_product.price }}</div>
+        <div class="product-description">{{ single_product.description }}</div>
+
+        <form action="{% url 'add_cart' single_product.id %}" method="POST">
+          {% csrf_token %}
+
+          <div class="variant-group">
+            <span class="variant-label">Colour</span>
+            <select name="color" required>
+              <option value="" disabled selected>Select a colour</option>
+              {% for variation in single_product.variation_set.colors %}
+              <option value="{{ variation.variation_value }}">{{ variation.variation_value }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="variant-group">
+            <span class="variant-label">Size</span>
+            <select name="size">
+              <option value="" selected>Select a size</option>
+              {% for variation in single_product.variation_set.sizes %}
+              <option value="{{ variation.variation_value }}">{{ variation.variation_value }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {% if single_product.stock <= 0 %}
+          <div class="out-of-stock-notice"><i class="fa fa-times-circle mr-2"></i>Currently Unavailable</div>
+          {% else %}
+          <button type="submit" class="btn btn-primary add-cart-btn">
+            Add to Selection &nbsp; <i class="fa fa-shopping-bag"></i>
+          </button>
+          {% endif %}
+        </form>
+
+        <p class="product-note">
+          <i class="fa fa-lock"></i>Secure checkout &nbsp;·&nbsp;
+          <i class="fa fa-truck"></i>Complimentary shipping &nbsp;·&nbsp;
+          <i class="fa fa-undo"></i>Easy returns
+        </p>
+
+        <div class="product-perks">
+          <div class="perk-item">
+            <i class="fa fa-certificate perk-icon"></i>
+            <div class="perk-text"><span class="perk-title">Certified Authentic</span>Every piece verified and guaranteed</div>
+          </div>
+          <div class="perk-item">
+            <i class="fa fa-gift perk-icon"></i>
+            <div class="perk-text"><span class="perk-title">Gift Packaging</span>Complimentary luxury box included</div>
+          </div>
+          <div class="perk-item">
+            <i class="fa fa-shield perk-icon"></i>
+            <div class="perk-text"><span class="perk-title">2-Year Warranty</span>Full coverage on all products</div>
+          </div>
+          <div class="perk-item">
+            <i class="fa fa-headphones perk-icon"></i>
+            <div class="perk-text"><span class="perk-title">Concierge Service</span>Personal advisor available 24/7</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Reviews -->
+<section class="reviews-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+
+        <div class="reviews-header">
+          <div class="section-label">Client Testimonials</div>
+          <h2 class="section-title">Reviews</h2>
+        </div>
+
+        <!-- Write Review -->
+        <div class="review-form-wrap">
+          <h3 class="review-form-title">Share Your Experience</h3>
+          <p class="review-form-sub">Your perspective helps others make informed decisions</p>
+
+          <form action="{% url 'submit_review' single_product.id %}" method="POST">
+            {% csrf_token %}
+
+            <div>
+              <label>Your Rating</label>
+              <div class="rate">
+                <input type="radio" name="rating" id="rating10" value="5" required /><label for="rating10" title="5"></label>
+                <input type="radio" name="rating" id="rating9" value="4.5" required /><label for="rating9" title="4.5" class="half"></label>
+                <input type="radio" name="rating" id="rating8" value="4" required /><label for="rating8" title="4"></label>
+                <input type="radio" name="rating" id="rating7" value="3.5" required /><label for="rating7" title="3.5" class="half"></label>
+                <input type="radio" name="rating" id="rating6" value="3" required /><label for="rating6" title="3"></label>
+                <input type="radio" name="rating" id="rating5" value="2.5" required /><label for="rating5" title="2.5" class="half"></label>
+                <input type="radio" name="rating" id="rating4" value="2" required /><label for="rating4" title="2"></label>
+                <input type="radio" name="rating" id="rating3" value="1.5" required /><label for="rating3" title="1.5" class="half"></label>
+                <input type="radio" name="rating" id="rating2" value="1" required /><label for="rating2" title="1"></label>
+                <input type="radio" name="rating" id="rating1" value="0.5" required /><label for="rating1" title="0.5" class="half"></label>
+						  </div>
+            </div>
+
+            <div class="form-group">
+              <label>Review Title</label>
+              <input type="text" class="form-control" name="subject" placeholder="Summarise your experience">
+            </div>
+            <div class="form-group">
+              <label>Your Review</label>
+              <textarea name="review" class="form-control" placeholder="Share what makes this piece exceptional..."></textarea>
+            </div>
+
+            {% if user.is_authenticated %}
+              {% if orderproduct %}
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+              {% else %}
+                <div class="login-prompt">You must purchase this item to leave a review.</div>
+              {% endif %}
+            {% else %}
+              <div class="login-prompt">Please <a href="{% url 'login' %}">sign in</a> to submit a review.</div>
+            {% endif %}
+
+            {% include 'includes/alerts.html' %}
+          </form>
+        </div>
+
+        <!-- Review List -->
+        {% if reviews %}
+        <div class="rating-header">
+          <div class="rating-big-num">{{ single_product.averageReview }}</div>
+          <div>
+            <div class="rating-star">
+              <span>
+                <i class="fa fa-star{% if single_product.averageReview < 0.5 %}-o{% elif single_product.averageReview >= 0.5 and single_product.averageReview < 1 %}-half-o {% endif %}"></i>
+                <i class="fa fa-star{% if single_product.averageReview < 1.5 %}-o{% elif single_product.averageReview >= 1.5 and single_product.averageReview < 2 %}-half-o {% endif %}"></i>
+                <i class="fa fa-star{% if single_product.averageReview < 2.5 %}-o{% elif single_product.averageReview >= 2.5 and single_product.averageReview < 3 %}-half-o {% endif %}"></i>
+                <i class="fa fa-star{% if single_product.averageReview < 3.5 %}-o{% elif single_product.averageReview >= 3.5 and single_product.averageReview < 4 %}-half-o {% endif %}"></i>
+                <i class="fa fa-star{% if single_product.averageReview < 4.5 %}-o{% elif single_product.averageReview >= 4.5 and single_product.averageReview < 5 %}-half-o {% endif %}"></i>
+              </span>
+            </div>
+            <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-faint);margin-top:0.3rem;">Based on {{ single_product.countReview }} reviews</div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% for review in reviews %}
+        <div class="review-card stagger-item" style="animation-delay:{{ forloop.counter0 }}00ms;">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <div class="reviewer-name">{{ review.user.full_name }}</div>
+              <div class="rating-star mt-1">
+                <span>
+                  <i class="fa fa-star{% if review.rating == 0.5 %}-half-o{% elif review.rating < 1 %}-o {% endif %}"></i>
+                  <i class="fa fa-star{% if review.rating == 1.5 %}-half-o{% elif review.rating < 2 %}-o {% endif %}"></i>
+                  <i class="fa fa-star{% if review.rating == 2.5 %}-half-o{% elif review.rating < 3 %}-o {% endif %}"></i>
+                  <i class="fa fa-star{% if review.rating == 3.5 %}-half-o{% elif review.rating < 4 %}-o {% endif %}"></i>
+                  <i class="fa fa-star{% if review.rating == 4.5 %}-half-o{% elif review.rating < 5 %}-o {% endif %}"></i>
+                </span>
+              </div>
+            </div>
+            <span class="review-date">{{ review.updated_at }}</span>
+          </div>
+          <div class="review-subject">{{ review.subject }}</div>
+          <p class="review-text">{{ review.review }}</p>
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

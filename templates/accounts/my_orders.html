@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.dashboard-section{padding:5rem 0;background:var(--off-white);}
+.dash-page-header{background:var(--charcoal);padding:3.5rem 0;position:relative;overflow:hidden;}
+.dash-page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,0.06),transparent 55%);}
+.dash-page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;}
+.dash-eyebrow{font-size:0.58rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
+.dash-title{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--cream);letter-spacing:0.04em;}
+.orders-card{background:var(--cream);border:1px solid var(--border-light);}
+.orders-header{padding:1.5rem 2.5rem;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;}
+.orders-header-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-light);}
+.orders-count-badge{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;background:var(--off-white);border:1px solid var(--border-light);color:var(--text-faint);padding:0.3rem 0.8rem;}
+/* Orders table */
+.orders-table{width:100%;border-collapse:collapse;}
+.orders-table thead tr{border-bottom:1px solid var(--border-mid);}
+.orders-table thead th{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-faint);padding:1rem 1.5rem;font-weight:400;text-align:left;}
+.orders-table tbody tr{border-bottom:1px solid var(--border-light);transition:background var(--t-fast);}
+.orders-table tbody tr:last-child{border-bottom:none;}
+.orders-table tbody tr:hover{background:var(--off-white);}
+.orders-table td{padding:1.4rem 1.5rem;font-size:0.82rem;color:var(--text-mid);letter-spacing:0.04em;vertical-align:middle;}
+.order-number-link{font-family:var(--font-body);font-size:0.72rem;letter-spacing:0.18em;color:var(--gold-dark);border-bottom:1px solid rgba(154,122,46,0.25);padding-bottom:1px;transition:all var(--t-fast);}
+.order-number-link:hover{color:var(--gold);border-bottom-color:var(--gold);}
+.order-amount{font-family:var(--font-display);font-size:1rem;font-weight:400;color:var(--text-dark);}
+.order-date{font-size:0.72rem;color:var(--text-faint);letter-spacing:0.08em;}
+/* Empty state */
+.orders-empty{padding:5rem 2rem;text-align:center;}
+.orders-empty i{font-size:3.5rem;color:var(--border-mid);display:block;margin-bottom:1.8rem;}
+.orders-empty h3{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text-light);margin-bottom:1rem;}
+.orders-empty p{font-size:0.8rem;color:var(--text-faint);margin-bottom:2rem;letter-spacing:0.08em;}
+</style>
+
+<div class="dash-page-header">
+  <div class="container">
+    <div class="dash-eyebrow">Client Portal</div>
+    <div class="dash-title">Order History</div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="container">
+    {% include 'includes/alerts.html' %}
+    <div class="row">
+      {% include 'includes/dashboard_sidebar.html' %}
+
+      <main class="col-md-9">
+        <div class="orders-card stagger-item">
+          <div class="orders-header">
+            <div class="orders-header-title"><i class="fa fa-shopping-bag mr-2" style="color:var(--gold);"></i>Your Purchases</div>
+            <span class="orders-count-badge">{{ orders|length }} Order{{ orders|length|pluralize }}</span>
+          </div>
+
+          {% if orders %}
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order No.</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Total</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+              <tr>
+                <td>
+                  <a href="{% url 'order_details' order.order_number %}" class="order-number-link">
+                    {{ order.order_number }}
+                  </a>
+                </td>
+                <td>{{ order.full_name }}</td>
+                <td>{{ order.phone }}</td>
+                <td><span class="order-amount">${{ order.order_total }}</span></td>
+                <td><span class="order-date">{{ order.created_at }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="orders-empty">
+            <i class="fa fa-shopping-bag"></i>
+            <h3>No orders yet</h3>
+            <p>You haven't placed any orders with us.</p>
+            <a href="{% url 'store' %}" class="btn btn-primary">Explore Collection</a>
+          </div>
+          {% endif %}
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

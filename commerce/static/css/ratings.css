@@ -1,0 +1,66 @@
+/* --- 1. Interactive Rating Form (The Input) --- */
+.rate {
+    display: inline-flex !important;
+    flex-direction: row-reverse !important;
+    justify-content: flex-end !important;
+    margin: 0.5rem 0 1.5rem !important;
+}
+
+.rate > input { display: none !important; }
+
+.rate > label {
+    all: unset !important;
+    position: relative !important;
+    display: inline-block !important;
+    width: 1.2rem !important; 
+    height: 1.5rem !important;
+    cursor: pointer !important;
+    color: #ccc !important; /* Inactive Star Color */
+    transition: color 0.2s ease;
+}
+
+.rate > label:before {
+    content: "\f005" !important;
+    font-family: FontAwesome !important;
+    font-size: 1.2rem !important;
+}
+
+/* Half Star Clipping Logic */
+.rate > label.half {
+    width: 0.6rem !important;
+    margin-right: -0.6rem !important;
+    overflow: hidden !important;
+    z-index: 10;
+}
+
+.rate > label.half:before {
+    width: 1.2rem !important;
+    position: absolute !important;
+    left: 0 !important;
+}
+
+/* Hover & Checked States */
+.rate > input:checked ~ label,
+.rate:not(:checked) > label:hover,
+.rate:not(:checked) > label:hover ~ label {
+    color: var(--gold) !important;
+}
+
+.rate > input:checked + label:hover,
+.rate > input:checked ~ label:hover,
+.rate > label:hover ~ input:checked ~ label,
+.rate > input:checked ~ label:hover ~ label {
+    color: var(--gold-dark) !important;
+}
+
+/* --- 2. Static Rating Display (The Reviews) --- */
+.rating-star {
+    color: var(--gold);
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+}
+
+.rating-star i {
+    width: 1rem;
+    display: inline-block;
+}

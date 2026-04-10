@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+.payments-section{padding:5rem 0;}
+.pay-heading{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--text-dark);margin-bottom:0.5rem;letter-spacing:0.04em;}
+.pay-sub{font-size:0.72rem;letter-spacing:0.18em;color:var(--text-faint);margin-bottom:3rem;}
+.review-panel{background:var(--cream);border:1px solid var(--border-light);}
+.review-panel-header{padding:1.2rem 2rem;border-bottom:1px solid var(--border-light);font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-light);}
+.review-panel-body{padding:1.8rem 2rem;}
+.billing-info-name{font-family:var(--font-display);font-size:1.3rem;font-weight:400;color:var(--text-dark);margin-bottom:0.5rem;}
+.billing-info-detail{font-size:0.8rem;color:var(--text-light);letter-spacing:0.06em;line-height:1.9;font-weight:300;}
+.order-note-lux{border-left:2px solid var(--gold);padding:0.8rem 1.2rem;background:var(--gold-pale);font-size:0.78rem;color:var(--text-mid);margin-top:1rem;letter-spacing:0.04em;}
+.payment-method-row{border:1px solid var(--border-light);padding:1.2rem 1.6rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:all var(--t-fast);}
+.payment-method-row.active{border-color:var(--gold);background:var(--gold-pale);}
+.payment-method-row i{color:var(--gold);font-size:1.1rem;}
+.payment-method-label{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-mid);font-weight:500;}
+/* Checkout sidebar dark */
+.checkout-dark-panel{background:var(--charcoal);}
+.checkout-dark-inner{padding:2.5rem;}
+.checkout-dark-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;}
+.checkout-dark-line{display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.78rem;color:rgba(255,255,255,0.4);letter-spacing:0.08em;}
+.checkout-dark-line:last-of-type{border:none;}
+.checkout-dark-total{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--cream);display:flex;justify-content:space-between;align-items:baseline;padding:1.2rem 0;border-top:1px solid rgba(201,168,76,0.25);margin-top:0.5rem;}
+.checkout-dark-total span:last-child{color:var(--gold);}
+#cod-button{width:100%;padding:1.2rem;font-size:0.72rem;letter-spacing:0.25em;margin-top:1.5rem;position:relative;overflow:hidden;}
+#cod-button::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.6s var(--ease-luxury);}
+#cod-button:hover::after{transform:translateX(100%);}
+.demo-notice{font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.2);text-align:center;margin-top:1.2rem;border-top:1px solid rgba(255,255,255,0.05);padding-top:1.2rem;}
+.demo-notice strong{color:var(--gold);font-weight:400;}
+</style>
+
+<div class="container payments-section">
+  <div class="page-eyebrow" style="font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Review & Confirm</div>
+  <h1 class="pay-heading">Complete Your Purchase</h1>
+  <p class="pay-sub">Please review your details before placing the order</p>
+
+  <div class="row">
+    <div class="col-lg-8">
+
+      <!-- Billing Details -->
+      <div class="review-panel mb-3">
+        <div class="review-panel-header"><i class="fa fa-map-marker mr-2" style="color:var(--gold);"></i> Billing Address</div>
+        <div class="review-panel-body">
+          <div class="billing-info-name">{{ order.full_name }}</div>
+          <div class="billing-info-detail">
+            {{ order.full_address }}<br>
+            {{ order.city }}, {{ order.state }}<br>
+            {{ order.country }}<br>
+            {{ order.email }} &nbsp;·&nbsp; {{ order.phone }}
+          </div>
+          {% if order.order_note %}
+          <div class="order-note-lux"><strong style="font-weight:500;">Note:</strong> {{ order.order_note }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="review-panel mb-3">
+        <div class="review-panel-header"><i class="fa fa-credit-card mr-2" style="color:var(--gold);"></i> Payment Method</div>
+        <div class="review-panel-body">
+          <div class="payment-method-row active">
+            <i class="fa fa-money"></i>
+            <div>
+              <div class="payment-method-label">Cash on Delivery</div>
+              <div style="font-size:0.68rem;color:var(--text-faint);margin-top:2px;letter-spacing:0.06em;">Pay when your order arrives</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Items -->
+      <div class="review-panel">
+        <div class="review-panel-header"><i class="fa fa-shopping-bag mr-2" style="color:var(--gold);"></i> Order Review</div>
+        <div class="review-panel-body p-0">
+          <table class="table table-borderless mb-0">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th width="90">Qty</th>
+                <th width="120">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cart_item in cart_items %}
+              <tr>
+                <td>
+                  <div class="itemside">
+                    <img src="{{ cart_item.product.images.url }}" class="img-sm">
+                    <div>
+                      <a href="{{ cart_item.product.get_url }}" class="itemside-name" style="font-family:var(--font-display);font-size:1rem;font-weight:400;color:var(--text-dark);display:block;letter-spacing:0.02em;">{{ cart_item.product.product_name }}</a>
+                      {% for item in cart_item.variations.all %}
+                      <span style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--border-light);padding:0.2rem 0.5rem;margin-right:3px;">{{ item.variation_category|capfirst }}: {{ item.variation_value|capfirst }}</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </td>
+                <td><span style="font-size:0.78rem;color:var(--text-mid);">{{ cart_item.quantity }}</span></td>
+                <td><var class="price">${{ cart_item.sub_total }}</var></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Payment Sidebar -->
+    <div class="col-lg-4">
+      <div class="checkout-dark-panel">
+        <div class="checkout-dark-inner">
+          <div class="checkout-dark-title">Order Total</div>
+          <div class="checkout-dark-line"><span>Subtotal</span><span>$ {{ total }}</span></div>
+          <div class="checkout-dark-line"><span>Tax</span><span>$ {{ tax }}</span></div>
+          <div class="checkout-dark-line"><span>Shipping</span><span style="color:var(--gold);">Complimentary</span></div>
+          <div class="checkout-dark-total">
+            <span>Total</span>
+            <span>$ {{ grand_total }}</span>
+          </div>
+          <button id="cod-button" class="btn btn-primary">
+            Place Order &nbsp; <i class="fa fa-check"></i>
+          </button>
+          <div class="demo-notice"><strong>Demo Mode</strong> — No real payment processed</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+  let c=null;
+  if(document.cookie&&document.cookie!==''){
+    document.cookie.split(';').forEach(function(x){
+      x=x.trim();
+      if(x.substring(0,name.length+1)===(name+'=')){c=decodeURIComponent(x.substring(name.length+1));}
+    });
+  }
+  return c;
+}
+const csrftoken=getCookie('csrftoken');
+const orderID="{{ order.order_number }}";
+document.getElementById("cod-button").onclick=function(e){
+  e.preventDefault();
+  this.innerHTML='<i class="fa fa-spinner fa-spin"></i> &nbsp; Processing...';
+  this.disabled=true;
+  fetch("{% url 'payments' %}",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","X-CSRFToken":csrftoken},
+    body:JSON.stringify({orderID:orderID,transID:"COD",payment_method:"Cash on Delivery",status:"COMPLETED"})
+  }).then(r=>r.json()).then(data=>{
+    window.location.href="{% url 'order_complete' %}?order_number="+data.order_number+"&payment_id="+data.transID;
+  });
+};
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% autoescape off %}
+
+Hi {{ user.first_name }},
+
+Thank you for shopping with us! 🎉  
+Your order has been successfully placed and is currently being processed.
+
+==============================
+📦 ORDER DETAILS
+==============================
+Order Number : {{ order.order_number }}
+Order Date   : {{ order.created_at|date:"F d, Y" }}
+Order Total  : ${{ order.order_total }}
+
+We will notify you once your order has been shipped.
+
+If you have any questions or need assistance, please contact our support team.
+
+Thank you for choosing us!
+We look forward to serving you again.
+
+Best regards,
+GreatKart Team
+
+{% endautoescape %}

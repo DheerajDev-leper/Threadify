@@ -1,0 +1,37 @@
+<style>
+.dashboard-sidebar-wrap{background:var(--charcoal);padding:2.5rem;}
+.sidebar-user-label{font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1.8rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.sidebar-nav-item{display:flex;align-items:center;gap:0.8rem;font-family:var(--font-body);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:0.9rem 0;border-bottom:1px solid rgba(255,255,255,0.04);text-decoration:none;transition:all var(--t-fast);}
+.sidebar-nav-item i{color:var(--gold);font-size:0.75rem;width:16px;text-align:center;opacity:0.6;transition:opacity var(--t-fast);}
+.sidebar-nav-item:hover{color:rgba(255,255,255,0.8);padding-left:8px;}
+.sidebar-nav-item:hover i{opacity:1;}
+.sidebar-nav-item.active{color:var(--gold);border-left:2px solid var(--gold);padding-left:0.5rem;}
+.sidebar-nav-item.active i{opacity:1;}
+.sidebar-nav-item:last-child{border-bottom:none;}
+.sidebar-logout{display:flex;align-items:center;gap:0.8rem;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:0.9rem 0;margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.06);text-decoration:none;transition:all var(--t-fast);}
+.sidebar-logout:hover{color:rgba(255,71,87,0.7);}
+.sidebar-logout i{font-size:0.75rem;}
+</style>
+
+<aside class="col-md-3">
+  <div class="dashboard-sidebar-wrap">
+    <div class="sidebar-user-label">Client Portal</div>
+    <nav>
+      <a class="sidebar-nav-item {% if '/accounts/' == request.path %}active{% endif %}" href="{% url 'dashboard' %}">
+        <i class="fa fa-tachometer"></i> Dashboard
+      </a>
+      <a class="sidebar-nav-item {% if '/my_orders/' in request.path %}active{% endif %}" href="{% url 'my_orders' %}">
+        <i class="fa fa-shopping-bag"></i> My Orders
+      </a>
+      <a class="sidebar-nav-item {% if '/edit_profile/' in request.path %}active{% endif %}" href="{% url 'edit_profile' %}">
+        <i class="fa fa-user"></i> Edit Profile
+      </a>
+      <a class="sidebar-nav-item {% if '/change_password/' in request.path %}active{% endif %}" href="{% url 'change_password' %}">
+        <i class="fa fa-lock"></i> Change Password
+      </a>
+    </nav>
+    <a class="sidebar-logout" href="{% url 'logout' %}">
+      <i class="fa fa-sign-out"></i> Sign Out
+    </a>
+  </div>
+</aside>

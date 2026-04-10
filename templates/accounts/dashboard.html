@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.dashboard-section{padding:5rem 0;background:var(--off-white);}
+.dashboard-section::before{content:'';display:block;height:4px;background:linear-gradient(90deg,var(--charcoal) 60%,var(--gold) 100%);}
+.dash-page-header{background:var(--charcoal);padding:3.5rem 0;position:relative;overflow:hidden;margin-bottom:0;}
+.dash-page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,0.06),transparent 55%);}
+.dash-page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;}
+.dash-eyebrow{font-size:0.58rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;animation:titleReveal 0.7s var(--ease-luxury) 0.2s both;}
+.dash-title{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--cream);letter-spacing:0.04em;animation:titleReveal 0.7s var(--ease-luxury) 0.35s both;}
+
+/* Stat cards */
+.stat-card{background:var(--cream);border:1px solid var(--border-light);padding:2.5rem;position:relative;overflow:hidden;transition:all var(--t-mid);}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transition:transform var(--t-mid);}
+.stat-card:hover::after{transform:scaleX(1);}
+.stat-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-4px);}
+.stat-card-label{font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-faint);margin-bottom:0.8rem;}
+.stat-card-value{font-family:var(--font-display);font-size:3.5rem;font-weight:300;color:var(--gold-dark);line-height:1;margin-bottom:0.8rem;}
+.stat-card-desc{font-size:0.75rem;letter-spacing:0.1em;color:var(--text-light);margin-bottom:1.5rem;}
+.stat-card-icon{position:absolute;top:2rem;right:2rem;font-size:2.5rem;color:var(--border-light);}
+
+/* Profile card */
+.profile-card{background:var(--cream);border:1px solid var(--border-light);overflow:hidden;}
+.profile-card-banner{background:var(--charcoal);height:80px;position:relative;}
+.profile-card-banner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;}
+.profile-avatar-wrap{text-align:center;margin-top:-40px;margin-bottom:1rem;position:relative;z-index:1;}
+.profile-avatar{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--cream);box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+.profile-avatar-placeholder{width:80px;height:80px;border-radius:50%;background:var(--charcoal);border:3px solid var(--cream);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.8rem;color:var(--gold);}
+.profile-name{font-family:var(--font-display);font-size:1.4rem;font-weight:400;color:var(--text-dark);text-align:center;margin-bottom:0.3rem;letter-spacing:0.02em;}
+.profile-info-row{display:flex;align-items:center;gap:0.6rem;font-size:0.72rem;color:var(--text-faint);padding:0.6rem 2rem;border-bottom:1px solid var(--border-light);letter-spacing:0.06em;}
+.profile-info-row i{color:var(--gold);font-size:0.7rem;width:14px;text-align:center;}
+.profile-info-row:last-child{border-bottom:none;}
+.profile-card-footer{padding:1.5rem 2rem;border-top:1px solid var(--border-light);}
+</style>
+
+<!-- Page header -->
+<div class="dash-page-header">
+  <div class="container">
+    <div class="dash-eyebrow">Client Portal</div>
+    <div class="dash-title">Welcome, {{ user.first_name }}</div>
+  </div>
+</div>
+
+<section class="dashboard-section">
+  <div class="container">
+    {% include 'includes/alerts.html' %}
+    <div class="row">
+      {% include 'includes/dashboard_sidebar.html' %}
+
+      <main class="col-md-9">
+        <div class="row mb-4">
+
+          <!-- Orders stat -->
+          <div class="col-md-6 mb-3 stagger-item" style="animation-delay:0.1s;">
+            <div class="stat-card">
+              <i class="fa fa-shopping-bag stat-card-icon"></i>
+              <div class="stat-card-label">Total Orders</div>
+              <div class="stat-card-value">{{ orders_count }}</div>
+              <div class="stat-card-desc">Lifetime purchases with us</div>
+              <a href="{% url 'my_orders' %}" class="btn btn-outline-primary" style="font-size:0.62rem;padding:0.65rem 1.5rem;">View History &rarr;</a>
+            </div>
+          </div>
+
+          <!-- Profile card -->
+          <div class="col-md-6 mb-3 stagger-item" style="animation-delay:0.2s;">
+            <div class="profile-card">
+              <div class="profile-card-banner"></div>
+              <div class="profile-avatar-wrap">
+                {% if userprofile.profile_picture %}
+                <img src="{{ userprofile.profile_picture.url }}" alt="Profile" class="profile-avatar">
+                {% else %}
+                <div class="profile-avatar-placeholder">{{ user.first_name|first }}</div>
+                {% endif %}
+              </div>
+              <div class="profile-name">{{ user.full_name }}</div>
+              <div class="profile-info-row">
+                <i class="fa fa-envelope-o"></i>
+                <span>{{ user.email }}</span>
+              </div>
+              <div class="profile-info-row">
+                <i class="fa fa-phone"></i>
+                <span>{{ user.phone_number }}</span>
+              </div>
+              <div class="profile-card-footer">
+                <a href="{% url 'edit_profile' %}" class="btn btn-light btn-block" style="font-size:0.62rem;padding:0.7rem;">Edit Profile</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
