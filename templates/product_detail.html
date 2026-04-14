@@ -3,58 +3,151 @@
 {% block content %}
 <style>
 .product-detail-wrap{padding:5rem 0;}
-/* Left gallery */
-.product-gallery{position:sticky;top:110px;}
-.gallery-main{height:580px;background:var(--off-white);overflow:hidden;position:relative;cursor:zoom-in;}
-.gallery-main img{width:100%;height:100%;object-fit:cover;transition:transform var(--t-slow);}
-.gallery-main:hover img{transform:scale(1.06);}
-.gallery-main::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity var(--t-mid);}
-.gallery-main:hover::after{opacity:1;}
-.gallery-thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-.gallery-thumbs a img{width:76px;height:76px;object-fit:cover;border:1px solid var(--border-light);transition:all var(--t-fast);cursor:pointer;filter:grayscale(0.2);}
-.gallery-thumbs a img:hover{border-color:var(--gold);filter:none;}
 
-/* Right product info */
+/* ── Gallery ─────────────────────────────────────── */
+.product-gallery{position:sticky;top:110px;}
+.gallery-main{
+  height:520px;
+  background:var(--off-white);
+  overflow:hidden;
+  position:relative;
+  cursor:zoom-in;
+  border:1px solid var(--border-light);
+}
+.gallery-main img{
+  width:100%;height:100%;
+  object-fit:contain;        /* contain so full product shows */
+  object-position:center;
+  transition:transform 0.6s var(--ease-luxury);
+  display:block;
+}
+.gallery-main:hover img{transform:scale(1.05);}
+.gallery-main::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.gallery-main:hover::after{opacity:1;}
+
+/* Thumbnails */
+.gallery-thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;list-style:none;padding:0;}
+.gallery-thumbs li{display:contents;}
+.gallery-thumbs a{display:block;flex-shrink:0;}
+.gallery-thumbs img{
+  width:76px;height:76px;
+  object-fit:contain;
+  background:var(--off-white);
+  border:1px solid var(--border-light);
+  transition:border-color 0.25s;
+  cursor:pointer;
+  display:block;
+}
+.gallery-thumbs img:hover,
+.gallery-thumbs img.active{border-color:var(--gold);}
+
+/* ── Product Info ─────────────────────────────────── */
 .product-info{padding-left:3rem;}
 .product-breadcrumb{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;}
-.product-breadcrumb a{color:var(--text-faint);transition:color var(--t-fast);}
+.product-breadcrumb a{color:var(--text-faint);}
 .product-breadcrumb a:hover{color:var(--gold);}
 .product-breadcrumb span{margin:0 0.5rem;color:var(--border-mid);}
 .product-name{font-family:var(--font-display);font-size:3rem;font-weight:300;line-height:1.1;letter-spacing:0.04em;color:var(--text-dark);margin-bottom:1rem;}
 .product-rating-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border-light);}
 .product-rating-row .review-count{font-size:0.68rem;letter-spacing:0.15em;color:var(--text-faint);}
-.product-price{font-family:var(--font-display);font-size:2.2rem;font-weight:300;color:var(--gold-dark);letter-spacing:0.06em;margin-bottom:1.5rem;}
+.product-price{
+  font-family:var(--font-display);
+  font-size:2.4rem;
+  font-weight:300;
+  color:var(--gold-dark);
+  letter-spacing:0.06em;
+  margin-bottom:1.5rem;
+  transition:all 0.3s var(--ease-luxury);
+}
+.product-price.price-changed{
+  animation:priceFlash 0.4s var(--ease-luxury);
+}
+@keyframes priceFlash{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.08);color:var(--gold);}
+  100%{transform:scale(1);}
+}
 .product-description{font-size:0.85rem;color:var(--text-light);line-height:2;font-weight:300;padding-bottom:2rem;border-bottom:1px solid var(--border-light);margin-bottom:2rem;}
 
-/* Variant selectors */
+/* ── Variant selectors ────────────────────────────── */
 .variant-group{margin-bottom:2rem;}
-.variant-group .variant-label{font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.8rem;display:block;}
-.variant-group select{width:100%;border:none;border-bottom:1px solid var(--border-mid);padding:0.8rem 0;font-family:var(--font-display);font-size:1rem;font-weight:300;color:var(--text-dark);background:transparent;-webkit-appearance:none;cursor:pointer;letter-spacing:0.04em;transition:border-color var(--t-fast);}
+.variant-label{font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-light);margin-bottom:0.8rem;display:flex;align-items:center;justify-content:space-between;}
+.variant-selected-val{color:var(--text-dark);font-weight:500;text-transform:none;letter-spacing:0;}
+.variant-group select{
+  width:100%;border:none;
+  border-bottom:1px solid var(--border-mid);
+  padding:0.8rem 0;
+  font-family:var(--font-display);font-size:1rem;
+  font-weight:300;color:var(--text-dark);
+  background:transparent;-webkit-appearance:none;
+  cursor:pointer;letter-spacing:0.04em;
+  transition:border-color 0.25s;
+}
 .variant-group select:focus{border-bottom-color:var(--gold);outline:none;}
+
+/* Color swatches */
+.color-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:0.5rem;}
+.color-swatch{
+  width:28px;height:28px;
+  border-radius:50%;
+  border:2px solid var(--border-light);
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+}
+.color-swatch:hover{transform:scale(1.15);border-color:var(--gold);}
+.color-swatch.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.25);}
+.color-swatch::after{
+  content:'✓';
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;color:#fff;
+  opacity:0;transition:opacity 0.15s;
+  text-shadow:0 1px 2px rgba(0,0,0,0.5);
+}
+.color-swatch.active::after{opacity:1;}
+
+/* Size pills */
+.size-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:0.5rem;}
+.size-pill{
+  padding:0.4rem 0.9rem;
+  border:1px solid var(--border-mid);
+  font-size:0.68rem;letter-spacing:0.12em;
+  cursor:pointer;
+  transition:all 0.2s;
+  color:var(--text-mid);
+  background:transparent;
+}
+.size-pill:hover{border-color:var(--gold);color:var(--gold);}
+.size-pill.active{background:var(--charcoal);border-color:var(--charcoal);color:var(--gold);}
+.size-pill.unavailable{opacity:0.3;cursor:not-allowed;text-decoration:line-through;}
 
 /* Add to cart */
 .add-cart-btn{width:100%;padding:1.1rem;font-size:0.72rem;letter-spacing:0.25em;margin-bottom:1rem;}
 .product-note{font-size:0.65rem;letter-spacing:0.1em;color:var(--text-faint);text-align:center;line-height:1.8;}
 .product-note i{color:var(--gold);margin-right:4px;}
 
-/* Product perks */
+/* Perks */
 .product-perks{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border-light);}
 .perk-item{display:flex;align-items:flex-start;gap:0.8rem;}
 .perk-icon{color:var(--gold);font-size:0.9rem;margin-top:2px;flex-shrink:0;}
 .perk-text{font-size:0.7rem;letter-spacing:0.08em;color:var(--text-light);line-height:1.6;}
 .perk-title{display:block;font-weight:500;color:var(--text-mid);margin-bottom:0.2rem;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.15em;}
-
-/* Out of stock */
 .out-of-stock-notice{border:1px solid rgba(139,46,46,0.2);background:rgba(139,46,46,0.03);padding:1rem 1.4rem;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:#8b2e2e;text-align:center;}
 
-/* ── Reviews ──────────────────────────────────────────────── */
+/* ── Reviews ──────────────────────────────────────── */
 .reviews-section{padding:5rem 0;background:var(--off-white);}
 .reviews-header{margin-bottom:3rem;}
 .reviews-header .section-label{font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
 .review-form-wrap{background:var(--cream);border:1px solid var(--border-light);padding:3rem;margin-bottom:3rem;}
 .review-form-title{font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--text-dark);margin-bottom:0.5rem;}
 .review-form-sub{font-size:0.72rem;letter-spacing:0.1em;color:var(--text-faint);margin-bottom:2rem;}
-.review-card{background:var(--cream);border:1px solid var(--border-light);border-left:2px solid var(--gold);padding:2rem 2.2rem;margin-bottom:1.5px;transition:box-shadow var(--t-mid);}
+.review-card{background:var(--cream);border:1px solid var(--border-light);border-left:2px solid var(--gold);padding:2rem 2.2rem;margin-bottom:2px;transition:box-shadow 0.3s;}
 .review-card:hover{box-shadow:var(--shadow-card);}
 .reviewer-name{font-family:var(--font-display);font-size:1.1rem;font-weight:400;color:var(--text-dark);}
 .review-date{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-faint);}
@@ -62,45 +155,48 @@
 .review-text{font-size:0.82rem;color:var(--text-light);line-height:1.9;font-weight:300;}
 .login-prompt{border:1px solid var(--border-light);padding:1.5rem 2rem;font-size:0.78rem;color:var(--text-light);letter-spacing:0.06em;}
 .login-prompt a{color:var(--gold);border-bottom:1px solid rgba(201,168,76,0.3);}
-
-/* Rating stars header */
 .rating-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;}
 .rating-big-num{font-family:var(--font-display);font-size:4rem;font-weight:300;color:var(--gold-dark);line-height:1;}
-
-
-
-
-
 </style>
 
 <!-- Product Detail -->
 <div class="container product-detail-wrap">
   <div class="row">
 
-    <!-- Gallery -->
+    <!-- ── Gallery ── -->
     <div class="col-md-6">
       <div class="product-gallery">
-        <div class="gallery-main mainImage">
-          <img src="{{ single_product.Image.url }}" alt="{{ single_product.product_name }}">
+        <!-- Main image -->
+        <div class="gallery-main" id="mainImageWrap">
+          <img src="{{ single_product.Image.url }}"
+               alt="{{ single_product.product_name }}"
+               id="mainImg">
         </div>
-        <ul class="thumbs gallery-thumbs" style="list-style:none;padding:0;">
+
+        <!-- Thumbnails — use Image.url for first thumb, not images.url -->
+        <ul class="gallery-thumbs">
           <li>
-            <a href="{{ single_product.images.url }}" target="mainImage">
-              <img src="{{ single_product.images.url }}" alt="">
+            <a href="{{ single_product.Image.url }}" class="thumb-link">
+              <img src="{{ single_product.Image.url }}"
+                   alt="{{ single_product.product_name }}"
+                   class="active">
             </a>
-            {% for image in product_gallery %}
-            <a href="{{ image.image.url }}" class="thumb-item" target="mainImage">
-              <img src="{{ image.image.url }}" alt="">
-            </a>
-            {% endfor %}
           </li>
+          {% for image in product_gallery %}
+          <li>
+            <a href="{{ image.image.url }}" class="thumb-link">
+              <img src="{{ image.image.url }}" alt="Gallery image {{ forloop.counter }}">
+            </a>
+          </li>
+          {% endfor %}
         </ul>
       </div>
     </div>
 
-    <!-- Info -->
+    <!-- ── Product Info ── -->
     <div class="col-md-6">
       <div class="product-info">
+
         <div class="product-breadcrumb">
           <a href="{% url 'home' %}">Home</a>
           <span>·</span>
@@ -124,37 +220,64 @@
           <span class="review-count">{{ single_product.countReview }} Reviews</span>
         </div>
 
-        <div class="product-price">${{ single_product.price }}</div>
+        <!-- Price — updates via JS when variant changes -->
+        <div class="product-price" id="productPrice">
+          ${{ single_product.price }}
+        </div>
+
         <div class="product-description">{{ single_product.description }}</div>
 
-        <form action="{% url 'add_cart' single_product.id %}" method="POST">
+        <form action="{% url 'add_cart' single_product.id %}" method="POST" id="addCartForm">
           {% csrf_token %}
 
+          <!-- Hidden selects still submitted with the form -->
+          <input type="hidden" name="color" id="colorInput" value="">
+          <input type="hidden" name="size"  id="sizeInput"  value="">
+
+          <!-- Colour swatches -->
           <div class="variant-group">
-            <span class="variant-label">Colour</span>
-            <select name="color" required>
-              <option value="" disabled selected>Select a colour</option>
+            <div class="variant-label">
+              Colour
+              <span class="variant-selected-val" id="colorLabel">— select</span>
+            </div>
+            <div class="color-swatches" id="colorSwatches">
               {% for variation in single_product.variation_set.colors %}
-              <option value="{{ variation.variation_value }}">{{ variation.variation_value }}</option>
+              <div class="color-swatch"
+                   title="{{ variation.variation_value }}"
+                   style="background:{{ variation.variation_value|lower }};"
+                   data-value="{{ variation.variation_value }}"
+                   data-price="{{ variation.price|default:single_product.price }}"
+                   onclick="selectColor(this)">
+              </div>
               {% endfor %}
-            </select>
+            </div>
           </div>
 
+          <!-- Size pills -->
           <div class="variant-group">
-            <span class="variant-label">Size</span>
-            <select name="size">
-              <option value="" selected>Select a size</option>
+            <div class="variant-label">
+              Size
+              <span class="variant-selected-val" id="sizeLabel">— select</span>
+            </div>
+            <div class="size-pills" id="sizePills">
               {% for variation in single_product.variation_set.sizes %}
-              <option value="{{ variation.variation_value }}">{{ variation.variation_value }}</option>
+              <div class="size-pill"
+                   data-value="{{ variation.variation_value }}"
+                   data-price="{{ variation.price|default:single_product.price }}"
+                   onclick="selectSize(this)">
+                {{ variation.variation_value }}
+              </div>
               {% endfor %}
-            </select>
+            </div>
           </div>
 
           {% if single_product.stock <= 0 %}
-          <div class="out-of-stock-notice"><i class="fa fa-times-circle mr-2"></i>Currently Unavailable</div>
+          <div class="out-of-stock-notice">
+            <i class="fa fa-times-circle mr-2"></i>Currently Unavailable
+          </div>
           {% else %}
           <button type="submit" class="btn btn-primary add-cart-btn">
-            Add to Selection &nbsp; <i class="fa fa-shopping-bag"></i>
+            Add to Selection &nbsp;<i class="fa fa-shopping-bag"></i>
           </button>
           {% endif %}
         </form>
@@ -168,29 +291,28 @@
         <div class="product-perks">
           <div class="perk-item">
             <i class="fa fa-certificate perk-icon"></i>
-            <div class="perk-text"><span class="perk-title">Certified Authentic</span>Every piece verified and guaranteed</div>
+            <div class="perk-text"><span class="perk-title">Certified Authentic</span>Every piece verified</div>
           </div>
           <div class="perk-item">
             <i class="fa fa-gift perk-icon"></i>
-            <div class="perk-text"><span class="perk-title">Gift Packaging</span>Complimentary luxury box included</div>
+            <div class="perk-text"><span class="perk-title">Gift Packaging</span>Luxury box included</div>
           </div>
           <div class="perk-item">
             <i class="fa fa-shield perk-icon"></i>
-            <div class="perk-text"><span class="perk-title">2-Year Warranty</span>Full coverage on all products</div>
+            <div class="perk-text"><span class="perk-title">2-Year Warranty</span>Full product coverage</div>
           </div>
           <div class="perk-item">
             <i class="fa fa-headphones perk-icon"></i>
-            <div class="perk-text"><span class="perk-title">Concierge Service</span>Personal advisor available 24/7</div>
+            <div class="perk-text"><span class="perk-title">Concierge Service</span>Advisor available 24/7</div>
           </div>
         </div>
 
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- Reviews -->
+<!-- ── Reviews ── -->
 <section class="reviews-section">
   <div class="container">
     <div class="row">
@@ -201,7 +323,6 @@
           <h2 class="section-title">Reviews</h2>
         </div>
 
-        <!-- Write Review -->
         <div class="review-form-wrap">
           <h3 class="review-form-title">Share Your Experience</h3>
           <p class="review-form-sub">Your perspective helps others make informed decisions</p>
@@ -243,12 +364,10 @@
             {% else %}
               <div class="login-prompt">Please <a href="{% url 'login' %}">sign in</a> to submit a review.</div>
             {% endif %}
-
             {% include 'includes/alerts.html' %}
           </form>
         </div>
 
-        <!-- Review List -->
         {% if reviews %}
         <div class="rating-header">
           <div class="rating-big-num">{{ single_product.averageReview }}</div>
@@ -262,13 +381,15 @@
                 <i class="fa fa-star{% if single_product.averageReview < 4.5 %}-o{% elif single_product.averageReview >= 4.5 and single_product.averageReview < 5 %}-half-o {% endif %}"></i>
               </span>
             </div>
-            <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-faint);margin-top:0.3rem;">Based on {{ single_product.countReview }} reviews</div>
+            <div style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-faint);margin-top:0.3rem;">
+              Based on {{ single_product.countReview }} reviews
+            </div>
           </div>
         </div>
         {% endif %}
 
         {% for review in reviews %}
-        <div class="review-card stagger-item" style="animation-delay:{{ forloop.counter0 }}00ms;">
+        <div class="review-card">
           <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
               <div class="reviewer-name">{{ review.user.full_name }}</div>
@@ -293,5 +414,84 @@
     </div>
   </div>
 </section>
+
+<script>
+const basePrice = {{ single_product.price }};
+
+/* ── Thumbnail switcher ─────────────────────────── */
+document.querySelectorAll('.thumb-link').forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    var src = this.getAttribute('href');
+    document.getElementById('mainImg').src = src;
+    // active border
+    document.querySelectorAll('.gallery-thumbs img').forEach(function(img){
+      img.classList.remove('active');
+    });
+    this.querySelector('img').classList.add('active');
+  });
+});
+
+/* ── Colour swatch selector ─────────────────────── */
+function selectColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(function(s){ s.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('colorInput').value = el.dataset.value;
+  document.getElementById('colorLabel').textContent = el.dataset.value;
+  updatePrice();
+}
+
+/* ── Size pill selector ──────────────────────────── */
+function selectSize(el) {
+  if (el.classList.contains('unavailable')) return;
+  document.querySelectorAll('.size-pill').forEach(function(s){ s.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('sizeInput').value = el.dataset.value;
+  document.getElementById('sizeLabel').textContent = el.dataset.value;
+  updatePrice();
+}
+
+/* ── Price updater ───────────────────────────────── */
+/* NOTE: Price-per-variant only works if your Variation model has a `price`
+   field. If it doesn't, price stays at the base product price.
+   To add per-variant pricing: add a DecimalField `price` to your
+   Variation model (nullable), and populate it in admin. */
+function updatePrice() {
+  var colorEl = document.querySelector('.color-swatch.active');
+  var sizeEl  = document.querySelector('.size-pill.active');
+  var price   = basePrice;
+
+  // Use variant price if available and different from 0
+  if (colorEl && parseFloat(colorEl.dataset.price) > 0) {
+    price = parseFloat(colorEl.dataset.price);
+  }
+  if (sizeEl && parseFloat(sizeEl.dataset.price) > 0) {
+    price = parseFloat(sizeEl.dataset.price);
+  }
+
+  var priceEl = document.getElementById('productPrice');
+  priceEl.textContent = '$' + price.toFixed(2);
+  priceEl.classList.remove('price-changed');
+  void priceEl.offsetWidth; // reflow to restart animation
+  priceEl.classList.add('price-changed');
+}
+
+/* ── Form validation — require colour & size ─────── */
+document.getElementById('addCartForm').addEventListener('submit', function(e) {
+  var colorPills = document.querySelectorAll('.color-swatch');
+  var sizePills  = document.querySelectorAll('.size-pill');
+
+  if (colorPills.length > 0 && !document.getElementById('colorInput').value) {
+    e.preventDefault();
+    alert('Please select a colour.');
+    return;
+  }
+  if (sizePills.length > 0 && !document.getElementById('sizeInput').value) {
+    e.preventDefault();
+    alert('Please select a size.');
+    return;
+  }
+});
+</script>
 
 {% endblock %}
