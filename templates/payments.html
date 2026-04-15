@@ -15,7 +15,6 @@
 .payment-method-row.active{border-color:var(--gold);background:var(--gold-pale);}
 .payment-method-row i{color:var(--gold);font-size:1.1rem;}
 .payment-method-label{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-mid);font-weight:500;}
-/* Checkout sidebar dark */
 .checkout-dark-panel{background:var(--charcoal);}
 .checkout-dark-inner{padding:2.5rem;}
 .checkout-dark-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;}
@@ -28,6 +27,25 @@
 #cod-button:hover::after{transform:translateX(100%);}
 .demo-notice{font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.2);text-align:center;margin-top:1.2rem;border-top:1px solid rgba(255,255,255,0.05);padding-top:1.2rem;}
 .demo-notice strong{color:var(--gold);font-weight:400;}
+
+/* ── PAYMENTS RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .payments-section { padding: 3rem 0; }
+  .pay-heading { font-size: 2.2rem; }
+  .pay-sub { margin-bottom: 2rem; }
+  .review-panel-header { padding: 1rem 1.5rem; }
+  .review-panel-body { padding: 1.4rem 1.5rem; }
+  .checkout-dark-inner { padding: 1.8rem; }
+  .checkout-dark-total { font-size: 1.6rem; }
+  /* Make order items table scrollable */
+  .review-panel .table-responsive { overflow-x: auto; }
+}
+
+@media (max-width: 576px) {
+  .pay-heading { font-size: 1.9rem; }
+  .review-panel-body { padding: 1.2rem 1rem; }
+  .checkout-dark-inner { padding: 1.4rem 1rem; }
+}
 </style>
 
 <div class="container payments-section">
@@ -38,7 +56,6 @@
   <div class="row">
     <div class="col-lg-8">
 
-      <!-- Billing Details -->
       <div class="review-panel mb-3">
         <div class="review-panel-header"><i class="fa fa-map-marker mr-2" style="color:var(--gold);"></i> Billing Address</div>
         <div class="review-panel-body">
@@ -55,7 +72,6 @@
         </div>
       </div>
 
-      <!-- Payment Method -->
       <div class="review-panel mb-3">
         <div class="review-panel-header"><i class="fa fa-credit-card mr-2" style="color:var(--gold);"></i> Payment Method</div>
         <div class="review-panel-body">
@@ -69,10 +85,10 @@
         </div>
       </div>
 
-      <!-- Order Items -->
       <div class="review-panel">
         <div class="review-panel-header"><i class="fa fa-shopping-bag mr-2" style="color:var(--gold);"></i> Order Review</div>
         <div class="review-panel-body p-0">
+          <div class="table-responsive">
           <table class="table table-borderless mb-0">
             <thead>
               <tr>
@@ -86,10 +102,10 @@
               <tr>
                 <td>
                   <div class="itemside">
-                    <img src="{{ cart_item.product.images.url }}" class="img-sm">
+                    <img src="{{ cart_item.product.Image.url }}" class="img-sm">
                     <div>
                       <a href="{{ cart_item.product.get_url }}" class="itemside-name" style="font-family:var(--font-display);font-size:1rem;font-weight:400;color:var(--text-dark);display:block;letter-spacing:0.02em;">{{ cart_item.product.product_name }}</a>
-                      {% for item in cart_item.variations.all %}
+                      {% for item in cart_item.variation.all %}
                       <span style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--border-light);padding:0.2rem 0.5rem;margin-right:3px;">{{ item.variation_category|capfirst }}: {{ item.variation_value|capfirst }}</span>
                       {% endfor %}
                     </div>
@@ -101,12 +117,12 @@
               {% endfor %}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Payment Sidebar -->
     <div class="col-lg-4">
       <div class="checkout-dark-panel">
         <div class="checkout-dark-inner">

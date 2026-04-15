@@ -2,7 +2,6 @@
 {% block content %}
 
 <style>
-/* ── AUTH PAGES SHARED ─────────────────────────────────────── */
 .auth-section{min-height:90vh;display:flex;align-items:center;justify-content:center;background:var(--charcoal);position:relative;overflow:hidden;padding:4rem 1rem;}
 .auth-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(201,168,76,0.07),transparent 60%);}
 .auth-section::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;}
@@ -25,11 +24,22 @@
 .auth-footer{border-top:1px solid var(--border-light);padding:1.5rem 3rem;text-align:center;font-size:0.68rem;letter-spacing:0.12em;color:var(--text-faint);}
 .auth-footer a{color:var(--gold);border-bottom:1px solid rgba(201,168,76,0.3);padding-bottom:1px;transition:border-color var(--t-fast);}
 .auth-footer a:hover{border-bottom-color:var(--gold);}
-/* Verification notice */
 .verification-notice{background:var(--cream);max-width:540px;margin:0 auto;padding:3rem;text-align:center;position:relative;z-index:1;animation:authReveal 0.7s var(--ease-luxury) both;}
 .verification-icon{font-size:3rem;color:var(--gold);margin-bottom:1.5rem;display:block;}
 .verification-title{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text-dark);margin-bottom:1rem;}
 .verification-text{font-size:0.82rem;color:var(--text-light);line-height:1.9;margin-bottom:1.5rem;}
+
+/* ── AUTH RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .auth-section { padding: 2rem 1rem; min-height: 100vh; align-items: flex-start; padding-top: 3rem; }
+  .auth-card { max-width: 100%; }
+  .auth-card-top { padding: 2rem 1.8rem 0; }
+  .auth-body { padding: 0 1.8rem 2rem; }
+  .auth-footer { padding: 1.2rem 1.8rem; }
+  .auth-title { font-size: 2rem; }
+  .verification-notice { padding: 2rem 1.5rem; }
+  .verification-title { font-size: 1.7rem; }
+}
 </style>
 
 <section class="auth-section">

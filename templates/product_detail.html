@@ -16,7 +16,7 @@
 }
 .gallery-main img{
   width:100%;height:100%;
-  object-fit:contain;        /* contain so full product shows */
+  object-fit:contain;
   object-position:center;
   transition:transform 0.6s var(--ease-luxury);
   display:block;
@@ -157,6 +157,43 @@
 .login-prompt a{color:var(--gold);border-bottom:1px solid rgba(201,168,76,0.3);}
 .rating-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;}
 .rating-big-num{font-family:var(--font-display);font-size:4rem;font-weight:300;color:var(--gold-dark);line-height:1;}
+
+/* ── PRODUCT DETAIL RESPONSIVE ──────────────────────────────── */
+@media (max-width: 992px) {
+  .product-info { padding-left: 2rem; }
+  .product-name { font-size: 2.4rem; }
+  .product-price { font-size: 2rem; }
+  .gallery-main { height: 420px; }
+  /* Un-stick gallery on tablet */
+  .product-gallery { position: static; }
+}
+
+@media (max-width: 768px) {
+  .product-detail-wrap { padding: 3rem 0; }
+  .product-info { padding-left: 0; margin-top: 2rem; }
+  .product-name { font-size: 2rem; }
+  .product-price { font-size: 1.8rem; }
+  .gallery-main { height: 320px; }
+  .gallery-thumbs img { width: 60px; height: 60px; }
+  .product-perks { grid-template-columns: 1fr; gap: 0.8rem; }
+  .reviews-section { padding: 3rem 0; }
+  .review-form-wrap { padding: 2rem 1.5rem; }
+  .review-card { padding: 1.5rem; }
+  .rating-big-num { font-size: 3rem; }
+}
+
+@media (max-width: 576px) {
+  .product-detail-wrap { padding: 2rem 0; }
+  .product-name { font-size: 1.7rem; }
+  .product-price { font-size: 1.6rem; }
+  .gallery-main { height: 260px; }
+  .gallery-thumbs img { width: 52px; height: 52px; }
+  .product-description { font-size: 0.82rem; }
+  .review-form-wrap { padding: 1.5rem 1rem; }
+  .review-form-title { font-size: 1.5rem; }
+  .review-card { padding: 1.2rem 1rem; }
+  .product-note { font-size: 0.6rem; }
+}
 </style>
 
 <!-- Product Detail -->
@@ -343,7 +380,7 @@
                 <input type="radio" name="rating" id="rating3" value="1.5" required /><label for="rating3" title="1.5" class="half"></label>
                 <input type="radio" name="rating" id="rating2" value="1" required /><label for="rating2" title="1"></label>
                 <input type="radio" name="rating" id="rating1" value="0.5" required /><label for="rating1" title="0.5" class="half"></label>
-						  </div>
+              </div>
             </div>
 
             <div class="form-group">
@@ -424,7 +461,6 @@ document.querySelectorAll('.thumb-link').forEach(function(link) {
     e.preventDefault();
     var src = this.getAttribute('href');
     document.getElementById('mainImg').src = src;
-    // active border
     document.querySelectorAll('.gallery-thumbs img').forEach(function(img){
       img.classList.remove('active');
     });
@@ -452,16 +488,11 @@ function selectSize(el) {
 }
 
 /* ── Price updater ───────────────────────────────── */
-/* NOTE: Price-per-variant only works if your Variation model has a `price`
-   field. If it doesn't, price stays at the base product price.
-   To add per-variant pricing: add a DecimalField `price` to your
-   Variation model (nullable), and populate it in admin. */
 function updatePrice() {
   var colorEl = document.querySelector('.color-swatch.active');
   var sizeEl  = document.querySelector('.size-pill.active');
   var price   = basePrice;
 
-  // Use variant price if available and different from 0
   if (colorEl && parseFloat(colorEl.dataset.price) > 0) {
     price = parseFloat(colorEl.dataset.price);
   }
@@ -472,7 +503,7 @@ function updatePrice() {
   var priceEl = document.getElementById('productPrice');
   priceEl.textContent = '$' + price.toFixed(2);
   priceEl.classList.remove('price-changed');
-  void priceEl.offsetWidth; // reflow to restart animation
+  void priceEl.offsetWidth;
   priceEl.classList.add('price-changed');
 }
 

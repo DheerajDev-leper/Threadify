@@ -16,7 +16,6 @@
 .profile-form-body{padding:2.5rem;}
 .form-section-label{font-size:0.58rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);padding-bottom:0.8rem;border-bottom:1px solid var(--border-light);margin-bottom:2rem;margin-top:2.5rem;}
 .form-section-label:first-child{margin-top:0;}
-/* Override Django form widget styles */
 .profile-form-body input[type="text"],
 .profile-form-body input[type="email"],
 .profile-form-body input[type="tel"],
@@ -33,6 +32,24 @@
 .profile-form-body label{font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-light);margin-bottom:0;}
 .profile-form-body .form-group{margin-bottom:1.8rem;}
 .profile-save-btn{padding:1rem 3rem;font-size:0.68rem;letter-spacing:0.25em;}
+
+/* ── EDIT PROFILE RESPONSIVE ────────────────────────────────── */
+@media (max-width: 768px) {
+  .dash-page-header { padding: 2.5rem 0; }
+  .dash-title { font-size: 2.2rem; }
+  .dashboard-section { padding: 2.5rem 0; }
+  .profile-form-header { padding: 1.2rem 1.5rem; }
+  .profile-form-body { padding: 1.8rem 1.5rem; }
+  .profile-pic-preview, .profile-pic-placeholder { width: 64px; height: 64px; font-size: 1.5rem; }
+  .form-row { flex-direction: column; }
+  .form-row > .col, .form-row > [class*="col-"] { max-width: 100%; padding-left: 0; padding-right: 0; }
+}
+
+@media (max-width: 576px) {
+  .dash-title { font-size: 1.9rem; }
+  .profile-form-body { padding: 1.4rem 1rem; }
+  .profile-save-btn { width: 100%; padding: 1rem; }
+}
 </style>
 
 <div class="dash-page-header">

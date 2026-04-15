@@ -30,6 +30,37 @@
 .summary-card .btn-light{width:100%;margin-top:0.8rem;border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.5)!important;}
 .summary-card .btn-light:hover{border-color:var(--gold);color:var(--gold)!important;}
 .summary-secure{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.2);text-align:center;margin-top:1.2rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+
+/* ── CART RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cart-section { padding: 3rem 0; }
+  .page-heading { font-size: 2.2rem; margin-bottom: 2rem; }
+  .cart-empty-state { padding: 4rem 1rem; }
+  .cart-empty-state h3 { font-size: 1.8rem; }
+
+  /* Hide table headers on mobile */
+  .cart-table .thead-row { display: none; }
+
+  /* Stack cart rows vertically */
+  .cart-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .cart-card-header { padding: 0.8rem 1.5rem; }
+  .summary-card { padding: 1.8rem; }
+  .summary-total { font-size: 1.5rem; }
+}
+
+@media (max-width: 576px) {
+  .cart-section { padding: 2rem 0; }
+  .page-heading { font-size: 1.8rem; }
+  .cart-row { padding: 1.2rem 1rem; }
+  .cart-product-name { font-size: 0.95rem; }
+  .summary-card { padding: 1.4rem; }
+}
 </style>
 
 <div class="container cart-section">
@@ -59,7 +90,7 @@
           <div class="cart-row">
             <!-- Product -->
             <div class="d-flex align-items-center gap-3" style="gap:1.2rem;display:flex!important;">
-              <img src="{{ item.product.Image.url }}" class="img-sm" style="width:80px;height:80px;flex-shrink:0;">
+              <img src="{{ item.product.Image.url }}" class="img-sm">
               <div>
                 <a href="{{ item.product.get_url }}" class="cart-product-name">{{ item.product.product_name }}</a>
                 {% if item.variation.all %}

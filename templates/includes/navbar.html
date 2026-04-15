@@ -83,6 +83,45 @@
 
 /* Bottom gold line */
 .nav-bottom-line{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.4) 20%,rgba(201,168,76,0.4) 80%,transparent);}
+
+/* ── NAVBAR RESPONSIVE ──────────────────────────────────────── */
+
+/* Tablets & below */
+@media (max-width: 991px) {
+  .topbar { display: none; }
+  .gold-top-line { display: none; }
+
+  .header-main .navbar { height: auto !important; padding: 0.8rem 0 !important; }
+
+  /* Collapsed nav sits below the bar */
+  .navbar-collapse { background: var(--carbon); padding: 1rem 0; border-top: 1px solid rgba(201,168,76,0.15); }
+
+  /* All nav items stacked */
+  .navbar-collapse .d-flex { flex-direction: column !important; align-items: flex-start !important; gap: 0 !important; width: 100%; }
+
+  .cat-toggle { width: 100%; justify-content: flex-start; border: none; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 1rem 1.2rem !important; border-radius: 0; }
+  .luxury-dropdown { position: static !important; transform: none !important; box-shadow: none; border: none; border-radius: 0; background: rgba(255,255,255,0.04); padding: 0; }
+  .luxury-dropdown .dropdown-item { padding-left: 2.4rem; }
+
+  .store-link { width: 100%; padding: 1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); border-left: none; }
+
+  .nav-search { max-width: 100%; width: 100%; padding: 0.8rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .nav-search .input-group { border-bottom-color: rgba(255,255,255,0.2); }
+
+  .nav-user { width: 100%; padding: 0.8rem 1.2rem; border-top: 1px solid rgba(201,168,76,0.15); justify-content: space-between; gap: 1rem; }
+  .nav-divider { display: none !important; }
+
+  .brand-wrap { margin-right: auto !important; }
+  .brand-wrap .logo { max-height: 30px; }
+}
+
+/* Small phones */
+@media (max-width: 576px) {
+  .brand-wrap .logo { max-height: 26px; }
+  .navbar-toggler { padding: 0.35rem 0.6rem; }
+  .nav-user { flex-wrap: wrap; }
+  .user-widget { flex: 1; }
+}
 </style>
 
 <header class="section-header">

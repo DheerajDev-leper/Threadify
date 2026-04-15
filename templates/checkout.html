@@ -29,6 +29,30 @@
 .order-item-price{font-size:0.82rem;color:var(--gold);letter-spacing:0.08em;flex-shrink:0;}
 .place-order-btn{width:100%;padding:1.2rem;font-size:0.72rem;letter-spacing:0.25em;margin-top:2rem;}
 .secure-note{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.2);text-align:center;margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
+
+/* ── CHECKOUT RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .checkout-section { padding: 3rem 0; }
+  .checkout-heading { font-size: 2.2rem; }
+  .checkout-sub { margin-bottom: 2rem; }
+  .steps-bar { margin-bottom: 2.5rem; }
+  .step-node { font-size: 0.55rem; letter-spacing: 0.12em; gap: 0.5rem; }
+  .step-connector { max-width: 30px; margin: 0 0.5rem; }
+  .billing-card { padding: 1.8rem 1.5rem; }
+  .order-panel-inner { padding: 1.8rem; }
+  .form-row { flex-direction: column; }
+  .form-row > .col, .form-row > [class*="col-"] { max-width: 100%; padding-left: 0; padding-right: 0; }
+}
+
+@media (max-width: 576px) {
+  .checkout-section { padding: 2rem 0; }
+  .checkout-heading { font-size: 1.8rem; }
+  .billing-card { padding: 1.4rem 1rem; }
+  .step-node span:not(.step-num) { display: none; }
+  .step-num { width: 28px; height: 28px; }
+  .order-panel-inner { padding: 1.4rem 1rem; }
+  .order-item img { width: 48px; height: 48px; }
+}
 </style>
 
 <div class="container checkout-section">

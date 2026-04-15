@@ -30,6 +30,23 @@
 .footer-legal{font-size:0.6rem;letter-spacing:0.15em;color:rgba(255,255,255,0.2);display:flex;gap:1.5rem;}
 .footer-legal a{color:rgba(255,255,255,0.25);transition:color var(--t-fast);}
 .footer-legal a:hover{color:var(--gold);}
+
+/* ── FOOTER RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .footer-upper { padding: 3rem 0 2rem; }
+  .footer-bottom .row { flex-direction: column; gap: 1rem; text-align: center; }
+  .footer-bottom .col-md-4 { text-align: center !important; }
+  .footer-cards { justify-content: center; }
+  .footer-legal { justify-content: center; }
+  .footer-copy { margin-bottom: 0.5rem; }
+}
+
+@media (max-width: 576px) {
+  .footer-upper { padding: 2.5rem 0 1.5rem; }
+  .footer-col-title { margin-top: 0.5rem; }
+  .footer-links a { font-size: 0.7rem; }
+  .footer-contact-item span { font-size: 0.7rem; }
+}
 </style>
 {% load static %}
 <footer class="section-footer border-top">

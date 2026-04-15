@@ -77,6 +77,69 @@
 .banner-cta-image{position:absolute;right:0;top:0;bottom:0;width:45%;overflow:hidden;}
 .banner-cta-image img{width:100%;height:100%;object-fit:cover;opacity:0.35;}
 .banner-cta-image::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--charcoal) 0%,transparent 40%);}
+
+/* ── HOME RESPONSIVE ────────────────────────────────────────── */
+
+/* Large tablets */
+@media (max-width: 1024px) {
+  .hero-title { font-size: 4rem; }
+  .products-grid { grid-template-columns: repeat(3, 1fr); }
+  .product-card-lux .pcard-img { height: 300px; }
+  .editorial-section { padding: 5rem 0; }
+  .editorial-heading { font-size: 2.5rem; }
+  .banner-cta-title { font-size: 2.8rem; }
+  .banner-cta { padding: 5rem 0; }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .hero-section { height: 70vh; min-height: 480px; }
+  .hero-title { font-size: 2.8rem; }
+  .hero-subtitle { font-size: 0.75rem; letter-spacing: 0.12em; max-width: 100%; }
+  .hero-actions { flex-direction: column; gap: 0.8rem; }
+  .hero-actions .btn { min-width: unset; width: 100%; max-width: 280px; }
+  .hero-scroll { display: none; }
+
+  .editorial-section { padding: 3.5rem 0; }
+  .editorial-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .editorial-divider { display: none; }
+  .editorial-heading { font-size: 2.2rem; }
+  .editorial-stat { gap: 2rem; }
+  .stat-num { font-size: 2rem; }
+
+  .products-section { padding: 3.5rem 0; }
+  .section-intro-row { flex-direction: column; align-items: flex-start; gap: 1rem; margin-bottom: 2rem; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); }
+  .product-card-lux .pcard-img { height: 260px; }
+
+  .banner-cta { padding: 4rem 0; }
+  .banner-cta-image { display: none; }
+  .banner-cta-content { max-width: 100%; }
+  .banner-cta-title { font-size: 2.2rem; }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .hero-section { height: 80vh; min-height: 420px; }
+  .hero-title { font-size: 2.2rem; letter-spacing: 0.02em; }
+  .hero-eyebrow { font-size: 0.55rem; letter-spacing: 0.3em; margin-bottom: 1rem; }
+  .hero-subtitle { display: none; }
+  .hero-actions .btn { max-width: 100%; }
+
+  .marquee-item { font-size: 0.55rem; letter-spacing: 0.2em; }
+
+  .editorial-section { padding: 2.5rem 0; }
+  .editorial-heading { font-size: 1.9rem; }
+  .editorial-stat { flex-wrap: wrap; gap: 1.5rem; }
+
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 1px; }
+  .product-card-lux .pcard-img { height: 190px; }
+  .product-card-lux .pcard-info { padding: 1rem 1rem 1.2rem; }
+  .product-card-lux .pcard-name { font-size: 0.95rem; }
+
+  .banner-cta-title { font-size: 1.9rem; }
+  .banner-cta-sub { font-size: 0.75rem; }
+}
 </style>
 
 <!-- ── HERO ────────────────────────────────────────────────── -->

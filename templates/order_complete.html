@@ -3,7 +3,6 @@
 {% block content %}
 <style>
 .order-complete-section{padding:5rem 0 6rem;background:var(--cream);}
-/* Success hero */
 .success-section{background:var(--charcoal);padding:5rem 0;position:relative;overflow:hidden;text-align:center;}
 .success-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(201,168,76,0.08),transparent 65%);}
 .success-section::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.4;}
@@ -15,7 +14,6 @@
 @keyframes ringPulse{0%,100%{transform:scale(1);opacity:0.5;}50%{transform:scale(1.15);opacity:0.15;}}
 .success-heading{font-family:var(--font-display);font-size:3rem;font-weight:300;color:var(--cream);margin-bottom:0.8rem;animation:titleReveal 0.7s var(--ease-luxury) 0.5s both;}
 .success-sub{font-size:0.78rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:2rem;animation:titleReveal 0.7s var(--ease-luxury) 0.7s both;}
-/* Invoice */
 .invoice-section{padding:5rem 0;}
 .invoice-wrap{max-width:780px;margin:0 auto;}
 .invoice-box{background:var(--cream);border:1px solid var(--border-light);}
@@ -34,7 +32,6 @@
 .invoice-meta-label{font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-faint);margin-bottom:0.3rem;}
 .invoice-meta-value{font-size:0.85rem;color:var(--text-dark);font-weight:400;letter-spacing:0.04em;}
 .status-badge{display:inline-block;background:rgba(107,143,94,0.12);color:#4a7a40;border:1px solid rgba(107,143,94,0.25);font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.3rem 0.7rem;}
-/* Invoice table */
 .invoice-table thead th{background:var(--charcoal);color:rgba(255,255,255,0.4);border:none;font-size:0.6rem;letter-spacing:0.2em;}
 .invoice-table td{color:var(--text-mid);font-size:0.82rem;border-top:1px solid var(--border-light);}
 .invoice-table tfoot th{font-size:0.78rem;letter-spacing:0.06em;border-top:1px solid var(--border-mid);background:transparent;color:var(--text-light);}
@@ -42,6 +39,32 @@
 .invoice-footer-note{text-align:center;padding:1.5rem 2rem;border-top:1px solid var(--border-light);background:var(--off-white);}
 .invoice-footer-note p{font-size:0.72rem;letter-spacing:0.15em;color:var(--text-faint);margin:0;font-family:var(--font-display);font-style:italic;font-size:1rem;font-weight:300;}
 .invoice-actions{display:flex;justify-content:center;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;}
+
+/* ── ORDER COMPLETE RESPONSIVE ──────────────────────────────── */
+@media (max-width: 768px) {
+  .success-section { padding: 3.5rem 0; }
+  .success-heading { font-size: 2.2rem; }
+  .invoice-section { padding: 3rem 0; }
+  .invoice-header { flex-direction: column; gap: 1.5rem; padding: 1.8rem 2rem; }
+  .invoice-to { text-align: left; }
+  .invoice-body { padding: 1.8rem; }
+  .invoice-meta-cell { padding: 0.8rem 1rem; }
+  .invoice-actions { flex-direction: column; align-items: center; }
+  .invoice-actions .btn { width: 100%; max-width: 300px; }
+}
+
+@media (max-width: 576px) {
+  .success-heading { font-size: 1.9rem; }
+  .success-icon-outer, .success-icon-core { width: 76px; height: 76px; }
+  .success-icon-core { font-size: 1.8rem; }
+  .invoice-body { padding: 1.4rem 1rem; }
+  .invoice-header { padding: 1.4rem 1rem; }
+  .invoice-meta-grid { grid-template-columns: 1fr; }
+  .invoice-meta-cell { border-right: none; }
+  .invoice-meta-cell:nth-last-child(-n+2) { border-bottom: 1px solid var(--border-light); }
+  .invoice-meta-cell:last-child { border-bottom: none; }
+  .table-responsive { overflow-x: auto; }
+}
 </style>
 
 <!-- Success Banner -->
@@ -65,7 +88,6 @@
   <div class="invoice-wrap">
     <div style="font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:1.5rem;">Your Receipt</div>
     <div class="invoice-box">
-      <!-- Header -->
       <div class="invoice-header">
         <div class="invoice-logo-area">
           <img src="{% static '/images/logo.png' %}" alt="GreatKart" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
@@ -82,9 +104,7 @@
         </div>
       </div>
 
-      <!-- Body -->
       <div class="invoice-body">
-        <!-- Meta -->
         <div class="invoice-meta-grid">
           <div class="invoice-meta-cell">
             <div class="invoice-meta-label">Order Number</div>
@@ -104,7 +124,7 @@
           </div>
         </div>
 
-        <!-- Items -->
+        <div class="table-responsive">
         <table class="table table-bordered invoice-table">
           <thead>
             <tr>
@@ -146,9 +166,9 @@
             </tr>
           </tfoot>
         </table>
+        </div>
       </div>
 
-      <!-- Footer note -->
       <div class="invoice-footer-note">
         <p>Thank you for choosing GreatKart. We trust you will treasure your acquisition.</p>
       </div>

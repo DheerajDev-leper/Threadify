@@ -45,7 +45,6 @@
   to{opacity:1;transform:translateY(0);}
 }
 .filter-drawer-inner{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;}
-@media(max-width:768px){.filter-drawer-inner{grid-template-columns:1fr;}}
 
 .filter-section-title{
   font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;
@@ -107,8 +106,6 @@
 /* ── 3-column grid ───────────────────────────────── */
 .store-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
 .store-grid-item{position:relative;opacity:0;animation:staggerUp 0.6s cubic-bezier(0.25,0.46,0.45,0.94) both;}
-@media(max-width:900px){.store-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:540px){.store-grid{grid-template-columns:1fr;}}
 
 /* ── Product card ────────────────────────────────── */
 .product-card-lux{
@@ -159,6 +156,34 @@
 .no-result{padding:5rem 2rem;text-align:center;}
 .no-result i{font-size:3rem;color:var(--border-mid);display:block;margin-bottom:1.5rem;}
 .no-result h3{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text-light);}
+
+/* ── STORE RESPONSIVE ───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .store-grid { grid-template-columns: repeat(2,1fr); }
+  .filter-drawer-inner { grid-template-columns: repeat(2,1fr); }
+}
+
+@media (max-width: 768px) {
+  .pcard-img { height: 220px; }
+  .filter-drawer { padding: 1.5rem; }
+  .filter-drawer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+  .filter-actions { flex-wrap: wrap; }
+  .items-bar { gap: 0.5rem; }
+}
+
+@media (max-width: 540px) {
+  .store-grid { grid-template-columns: repeat(2,1fr); gap: 1px; }
+  .pcard-img { height: 180px; }
+  .pcard-info { padding: 0.9rem 0.9rem 1.2rem; }
+  .pcard-name { font-size: 0.9rem; }
+  .pcard-price { font-size: 0.75rem; }
+  .filter-toggle-btn { font-size: 0.6rem; padding: 0.5rem 0.9rem; }
+}
+
+@media (max-width: 360px) {
+  .store-grid { grid-template-columns: 1fr; }
+  .pcard-img { height: 240px; }
+}
 </style>
 
 <!-- Page Header -->
@@ -185,57 +210,48 @@
       <div class="active-filters" id="activeFilters"></div>
       <!-- Toggle button -->
       <button class="filter-toggle-btn" id="filterToggle" onclick="toggleFilters()">
-        <i class="fa fa-sliders"></i> Filter &amp; Sort
+        <i class="fa fa-sliders"></i> Filter
       </button>
     </div>
   </div>
 
-  <!-- Filter drawer (hidden by default) -->
-  <form method="GET" action="" id="filterForm">
+  <!-- Filter Drawer -->
+  <form method="GET" action="{{ request.path }}">
     <div class="filter-drawer" id="filterDrawer">
       <div class="filter-drawer-inner">
 
-        <!-- Size filter -->
+        <!-- Size -->
         <div>
           <div class="filter-section-title">Size</div>
           <div class="filter-size-pills" id="sizePillsFilter">
             {% for size in available_sizes %}
-            <div class="filter-size-pill {% if size in selected_sizes %}active{% endif %}"
-                 data-value="{{ size }}"
-                 onclick="toggleSizeFilter(this)">
-              {{ size }}
-            </div>
+            <span class="filter-size-pill {% if size in selected_sizes %}active{% endif %}"
+                  data-value="{{ size }}"
+                  onclick="toggleSizeFilter(this)">{{ size }}</span>
             {% endfor %}
           </div>
-          <!-- hidden inputs populated by JS -->
           <div id="sizeInputs">
-            {% for size in selected_sizes %}
-            <input type="hidden" name="size" value="{{ size }}">
-            {% endfor %}
+            {% for s in selected_sizes %}<input type="hidden" name="size" value="{{ s }}">{% endfor %}
           </div>
         </div>
 
-        <!-- Color filter -->
+        <!-- Color -->
         <div>
-          <div class="filter-section-title">Colour</div>
+          <div class="filter-section-title">Color</div>
           <div class="filter-color-dots" id="colorDotsFilter">
-            {% for color in available_colors %}
-            <div class="filter-color-dot {% if color in selected_colors %}active{% endif %}"
-                 title="{{ color }}"
-                 style="background:{{ color|lower }};"
-                 data-value="{{ color }}"
-                 onclick="toggleColorFilter(this)">
-            </div>
-            {% endfor %}
+            <span class="filter-color-dot {% if 'black' in selected_colors %}active{% endif %}" data-value="black" style="background:#1a1a1a;" onclick="toggleColorFilter(this)" title="Black"></span>
+            <span class="filter-color-dot {% if 'white' in selected_colors %}active{% endif %}" data-value="white" style="background:#f5f5f5;" onclick="toggleColorFilter(this)" title="White"></span>
+            <span class="filter-color-dot {% if 'navy' in selected_colors %}active{% endif %}"  data-value="navy"  style="background:#1b2a4a;" onclick="toggleColorFilter(this)" title="Navy"></span>
+            <span class="filter-color-dot {% if 'brown' in selected_colors %}active{% endif %}" data-value="brown" style="background:#6b3f2a;" onclick="toggleColorFilter(this)" title="Brown"></span>
+            <span class="filter-color-dot {% if 'gold' in selected_colors %}active{% endif %}"  data-value="gold"  style="background:#c9a84c;" onclick="toggleColorFilter(this)" title="Gold"></span>
+            <span class="filter-color-dot {% if 'grey' in selected_colors %}active{% endif %}"  data-value="grey"  style="background:#8a8a8a;" onclick="toggleColorFilter(this)" title="Grey"></span>
           </div>
           <div id="colorInputs">
-            {% for color in selected_colors %}
-            <input type="hidden" name="color" value="{{ color }}">
-            {% endfor %}
+            {% for c in selected_colors %}<input type="hidden" name="color" value="{{ c }}">{% endfor %}
           </div>
         </div>
 
-        <!-- Price range -->
+        <!-- Price -->
         <div>
           <div class="filter-section-title">Price Range</div>
           <div class="price-range-row">
