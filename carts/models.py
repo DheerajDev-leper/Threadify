@@ -19,7 +19,9 @@ class CartItem(models.Model):
     is_active = models.BooleanField(default=True)
 
     def sub_total(self):
-        return self.product.price * self.quantity
+        variation_price = self.variation.filter(price__isnull=False).values_list('price', flat=True).first()
+        price = variation_price if variation_price else self.product.price
+        return price * self.quantity
 
     def __unicode__(self):
         return self.product
