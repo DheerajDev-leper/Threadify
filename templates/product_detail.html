@@ -259,7 +259,7 @@
 
         <!-- Price — updates via JS when variant changes -->
         <div class="product-price" id="productPrice">
-          ${{ single_product.price }}
+          Rs{{ single_product.price }}
         </div>
 
         <div class="product-description">{{ single_product.description }}</div>
@@ -501,7 +501,7 @@ function updatePrice() {
   }
 
   var priceEl = document.getElementById('productPrice');
-  priceEl.textContent = '$' + price.toFixed(2);
+  priceEl.textContent = 'Rs' + price.toFixed(2);
   priceEl.classList.remove('price-changed');
   void priceEl.offsetWidth;
   priceEl.classList.add('price-changed');

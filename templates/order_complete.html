@@ -147,22 +147,22 @@
                 {% endif %}
               </td>
               <td class="text-center">{{ item.quantity }}</td>
-              <td class="text-center" style="color:var(--gold-dark);font-weight:500;">${{ item.product_price }}</td>
+              <td class="text-center" style="color:var(--gold-dark);font-weight:500;">Rs{{ item.product_price }}</td>
             </tr>
             {% endfor %}
           </tbody>
           <tfoot>
             <tr>
               <th colspan="2" class="text-right">Subtotal</th>
-              <th class="text-center">${{ subtotal }}</th>
+              <th class="text-center">Rs{{ subtotal }}</th>
             </tr>
             <tr>
               <th colspan="2" class="text-right">Tax</th>
-              <th class="text-center">${{ order.tax }}</th>
+              <th class="text-center">Rs{{ order.tax }}</th>
             </tr>
             <tr>
               <th colspan="2" class="text-right">Grand Total</th>
-              <th class="text-center">${{ order.order_total }}</th>
+              <th class="text-center">Rs{{ order.order_total }}</th>
             </tr>
           </tfoot>
         </table>

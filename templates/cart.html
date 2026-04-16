@@ -120,8 +120,8 @@
             </div>
             <!-- Price -->
             <div>
-              <var class="price" style="font-size:1rem;">${{ item.sub_total }}</var>
-              <small style="display:block;font-size:0.65rem;color:var(--text-faint);letter-spacing:0.08em;margin-top:2px;">${{ item.product.price }} each</small>
+              <var class="price" style="font-size:1rem;">Rs{{ item.sub_total }}</var>
+              <small style="display:block;font-size:0.65rem;color:var(--text-faint);letter-spacing:0.08em;margin-top:2px;">Rs{{ item.product.price }} each</small>
             </div>
             <!-- Remove -->
             <div class="text-right">
@@ -138,11 +138,11 @@
         <div class="summary-card-title">Order Summary</div>
         <div class="summary-line">
           <span>Subtotal</span>
-          <span>${{ total }}</span>
+          <span>Rs{{ total }}</span>
         </div>
         <div class="summary-line">
           <span>Tax</span>
-          <span>${{ tax }}</span>
+          <span>Rs{{ tax }}</span>
         </div>
         <div class="summary-line">
           <span>Shipping</span>
@@ -150,7 +150,7 @@
         </div>
         <div class="summary-total">
           <span>Total</span>
-          <span>${{ grand_total }}</span>
+          <span>Rs{{ grand_total }}</span>
         </div>
         <a href="{% url 'checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
         <a href="{% url 'store' %}" class="btn btn-light">Continue Shopping</a>

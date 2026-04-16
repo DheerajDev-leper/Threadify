@@ -112,7 +112,7 @@
                   </div>
                 </td>
                 <td><span style="font-size:0.78rem;color:var(--text-mid);">{{ cart_item.quantity }}</span></td>
-                <td><var class="price">${{ cart_item.sub_total }}</var></td>
+                <td><var class="price">Rs{{ cart_item.sub_total }}</var></td>
               </tr>
               {% endfor %}
             </tbody>
@@ -127,12 +127,12 @@
       <div class="checkout-dark-panel">
         <div class="checkout-dark-inner">
           <div class="checkout-dark-title">Order Total</div>
-          <div class="checkout-dark-line"><span>Subtotal</span><span>$ {{ total }}</span></div>
-          <div class="checkout-dark-line"><span>Tax</span><span>$ {{ tax }}</span></div>
+          <div class="checkout-dark-line"><span>Subtotal</span><span>Rs {{ total }}</span></div>
+          <div class="checkout-dark-line"><span>Tax</span><span>Rs {{ tax }}</span></div>
           <div class="checkout-dark-line"><span>Shipping</span><span style="color:var(--gold);">Complimentary</span></div>
           <div class="checkout-dark-total">
             <span>Total</span>
-            <span>$ {{ grand_total }}</span>
+            <span>Rs {{ grand_total }}</span>
           </div>
           <button id="cod-button" class="btn btn-primary">
             Place Order &nbsp; <i class="fa fa-check"></i>

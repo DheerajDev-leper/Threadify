@@ -169,11 +169,11 @@
 <!-- ── MARQUEE ─────────────────────────────────────────────── -->
 <div class="marquee-strip">
   <div class="marquee-inner">
-    <span class="marquee-item">Free Global Shipping on Orders Over $500</span>
+    <span class="marquee-item">Free Global Shipping on Orders Over Rs500</span>
     <span class="marquee-item">Authenticated & Certified Products</span>
     <span class="marquee-item">Bespoke Client Services Available</span>
     <span class="marquee-item">Complimentary Gift Packaging</span>
-    <span class="marquee-item">Free Global Shipping on Orders Over $500</span>
+    <span class="marquee-item">Free Global Shipping on Orders Over Rs500</span>
     <span class="marquee-item">Authenticated & Certified Products</span>
     <span class="marquee-item">Bespoke Client Services Available</span>
     <span class="marquee-item">Complimentary Gift Packaging</span>
@@ -246,7 +246,7 @@
               <i class="fa fa-star{% if product.averageReview < 4.5 %}-o{% elif product.averageReview >= 4.5 and product.averageReview < 5 %}-half-o {% endif %}"></i>
             </span>
           </div>
-          <span class="pcard-price">${{ product.price }}</span>
+          <span class="pcard-price">Rs{{ product.price }}</span>
         </div>
         <div class="pcard-hover-bar">Add to Selection</div>
         <div class="pcard-gold-line"></div>

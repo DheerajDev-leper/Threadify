@@ -11,7 +11,6 @@ from orders.models import Order, OrderProduct, Payment
 from .forms import OrderForm
 
 
-# ================= PLACE ORDER =================
 def place_order(request, total=0, quantity=0):
     current_user = request.user
     cart_items = CartItem.objects.filter(user=current_user)
@@ -23,11 +22,13 @@ def place_order(request, total=0, quantity=0):
     grand_total = 0
 
     for cart_item in cart_items:
-        total += cart_item.product.price * cart_item.quantity
+        variation_price = cart_item.variation.filter(price__isnull=False).values_list('price', flat=True).first()
+        unit_price = variation_price if variation_price else cart_item.product.price
+        total += unit_price * cart_item.quantity
         quantity += cart_item.quantity
 
-    tax = (2 * total) / 100
-    grand_total = total + tax
+    tax = round((2 * total) / 100, 2)
+    grand_total = round(total + tax, 2)
 
     if request.method == 'POST':
         form = OrderForm(request.POST)
@@ -49,7 +50,6 @@ def place_order(request, total=0, quantity=0):
             data.ip = request.META.get('REMOTE_ADDR')
             data.save()
 
-            # Generate order number
             current_date = datetime.date.today().strftime("%Y%m%d")
             order_number = current_date + str(data.id)
             data.order_number = order_number
@@ -73,7 +73,6 @@ def place_order(request, total=0, quantity=0):
     return redirect('checkout')
 
 
-# ================= COD PAYMENT =================
 def payments(request):
     body = json.loads(request.body)
 
@@ -86,7 +85,6 @@ def payments(request):
     except Order.DoesNotExist:
         return JsonResponse({'error': 'Order not found'}, status=400)
 
-    # Create COD payment
     payment = Payment.objects.create(
         user=request.user,
         payment_id="COD",
@@ -99,41 +97,36 @@ def payments(request):
     order.is_ordered = True
     order.save()
 
-    # Move cart items
     cart_items = CartItem.objects.filter(user=request.user)
 
     for item in cart_items:
+        # Use variation price if available, otherwise fall back to base price
+        variation_price = item.variation.filter(price__isnull=False).values_list('price', flat=True).first()
+        unit_price = variation_price if variation_price else item.product.price
+
         orderproduct = OrderProduct.objects.create(
             order_id=order.id,
             payment=payment,
             user=request.user,
             product=item.product,
             quantity=item.quantity,
-            product_price=item.product.price,
+            product_price=unit_price,
             ordered=True,
         )
-
         orderproduct.variation.set(item.variation.all())
 
-        # Reduce stock
         product = item.product
         product.stock -= item.quantity
         product.save()
 
     cart_items.delete()
 
-    # Send order email
     mail_subject = 'Thank you for your order!'
     message = render_to_string('order_received_email.html', {
         'user': request.user,
         'order': order,
     })
-
-    EmailMessage(
-        mail_subject,
-        message,
-        to=[request.user.email]
-    ).send()
+    EmailMessage(mail_subject, message, to=[request.user.email]).send()
 
     return JsonResponse({
         'order_number': order.order_number,
@@ -141,17 +134,12 @@ def payments(request):
     })
 
 
-# ================= ORDER COMPLETE =================
 def order_complete(request):
     order_number = request.GET.get('order_number')
     transID = request.GET.get('payment_id')
 
     try:
-        order = Order.objects.get(
-            order_number=order_number,
-            is_ordered=True
-        )
-
+        order = Order.objects.get(order_number=order_number, is_ordered=True)
         ordered_products = OrderProduct.objects.filter(order_id=order.id)
 
         subtotal = sum(
@@ -159,26 +147,18 @@ def order_complete(request):
             for item in ordered_products
         )
 
-        import uuid
-
-        payment = Payment.objects.create(
-            user=request.user,
-            payment_id=str(uuid.uuid4())[:12],
-            payment_method="Cash on Delivery",
-            amount_paid=order.order_total,
-            status="COMPLETED",
-        )
+        # Use the payment already attached to the order — don't create a new one
+        payment = order.payment
 
         context = {
             'order': order,
             'ordered_products': ordered_products,
             'order_number': order.order_number,
-            'transID': payment.payment_id,
+            'transID': transID,
             'payment': payment,
             'subtotal': subtotal,
-            'transID': transID,
+            'cart_items': ordered_products,  # template uses cart_items to render rows
         }
-
         return render(request, 'order_complete.html', context)
 
     except (Payment.DoesNotExist, Order.DoesNotExist):
