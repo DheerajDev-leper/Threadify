@@ -22,11 +22,14 @@
 .checkout-dark-line:last-of-type{border:none;}
 .checkout-dark-total{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--cream);display:flex;justify-content:space-between;align-items:baseline;padding:1.2rem 0;border-top:1px solid rgba(201,168,76,0.25);margin-top:0.5rem;}
 .checkout-dark-total span:last-child{color:var(--gold);}
-#cod-button{width:100%;padding:1.2rem;font-size:0.72rem;letter-spacing:0.25em;margin-top:1.5rem;position:relative;overflow:hidden;}
-#cod-button::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.6s var(--ease-luxury);}
-#cod-button:hover::after{transform:translateX(100%);}
+#cod-button,#pay-button{width:100%;padding:1.2rem;font-size:0.72rem;letter-spacing:0.25em;margin-top:1.5rem;position:relative;overflow:hidden;}
+#cod-button::after,#pay-button::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.6s var(--ease-luxury);}
+#cod-button:hover::after,#pay-button:hover::after{transform:translateX(100%);}
 .demo-notice{font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.2);text-align:center;margin-top:1.2rem;border-top:1px solid rgba(255,255,255,0.05);padding-top:1.2rem;}
 .demo-notice strong{color:var(--gold);font-weight:400;}
+
+/* ── payment method rows gap ── */
+.payment-method-row + .payment-method-row { margin-top: 0.6rem; }
 
 /* ── PAYMENTS RESPONSIVE ────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -37,7 +40,6 @@
   .review-panel-body { padding: 1.4rem 1.5rem; }
   .checkout-dark-inner { padding: 1.8rem; }
   .checkout-dark-total { font-size: 1.6rem; }
-  /* Make order items table scrollable */
   .review-panel .table-responsive { overflow-x: auto; }
 }
 
@@ -72,18 +74,32 @@
         </div>
       </div>
 
+      <!-- ── PAYMENT METHOD SELECTION ────────────────────────── -->
       <div class="review-panel mb-3">
         <div class="review-panel-header"><i class="fa fa-credit-card mr-2" style="color:var(--gold);"></i> Payment Method</div>
         <div class="review-panel-body">
-          <div class="payment-method-row active">
+
+          <!-- COD option -->
+          <div class="payment-method-row active" id="method-cod" onclick="selectMethod('cod')">
             <i class="fa fa-money"></i>
             <div>
               <div class="payment-method-label">Cash on Delivery</div>
               <div style="font-size:0.68rem;color:var(--text-faint);margin-top:2px;letter-spacing:0.06em;">Pay when your order arrives</div>
             </div>
           </div>
+
+          <!-- Card / Razorpay option -->
+          <div class="payment-method-row" id="method-card" onclick="selectMethod('card')">
+            <i class="fa fa-credit-card"></i>
+            <div>
+              <div class="payment-method-label">Card / UPI / Net Banking</div>
+              <div style="font-size:0.68rem;color:var(--text-faint);margin-top:2px;letter-spacing:0.06em;">Secure checkout powered by Razorpay</div>
+            </div>
+          </div>
+
         </div>
       </div>
+      <!-- ── END PAYMENT METHOD SELECTION ───────────────────── -->
 
       <div class="review-panel">
         <div class="review-panel-header"><i class="fa fa-shopping-bag mr-2" style="color:var(--gold);"></i> Order Review</div>
@@ -134,9 +150,17 @@
             <span>Total</span>
             <span>Rs {{ grand_total }}</span>
           </div>
-          <button id="cod-button" class="btn btn-primary">
+
+          <!-- COD button (shown by default) -->
+          <button id="cod-button" class="btn btn-primary" style="display:block;">
             Place Order &nbsp; <i class="fa fa-check"></i>
           </button>
+
+          <!-- Razorpay button (hidden by default) -->
+          <button id="pay-button" class="btn btn-primary" style="display:none;">
+            Pay Now &nbsp; <i class="fa fa-lock"></i>
+          </button>
+
           <div class="demo-notice"><strong>Demo Mode</strong> — No real payment processed</div>
         </div>
       </div>
@@ -145,30 +169,95 @@
   </div>
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+/* ── CSRF helper ─────────────────────────────────────────────── */
 function getCookie(name) {
-  let c=null;
-  if(document.cookie&&document.cookie!==''){
-    document.cookie.split(';').forEach(function(x){
-      x=x.trim();
-      if(x.substring(0,name.length+1)===(name+'=')){c=decodeURIComponent(x.substring(name.length+1));}
+  let c = null;
+  if (document.cookie && document.cookie !== '') {
+    document.cookie.split(';').forEach(function(x) {
+      x = x.trim();
+      if (x.substring(0, name.length + 1) === (name + '=')) {
+        c = decodeURIComponent(x.substring(name.length + 1));
+      }
     });
   }
   return c;
 }
-const csrftoken=getCookie('csrftoken');
-const orderID="{{ order.order_number }}";
-document.getElementById("cod-button").onclick=function(e){
-  e.preventDefault();
-  this.innerHTML='<i class="fa fa-spinner fa-spin"></i> &nbsp; Processing...';
-  this.disabled=true;
-  fetch("{% url 'payments' %}",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","X-CSRFToken":csrftoken},
-    body:JSON.stringify({orderID:orderID,transID:"COD",payment_method:"Cash on Delivery",status:"COMPLETED"})
-  }).then(r=>r.json()).then(data=>{
-    window.location.href="{% url 'order_complete' %}?order_number="+data.order_number+"&payment_id="+data.transID;
+
+const csrftoken = getCookie('csrftoken');
+const orderID   = "{{ order.order_number }}";
+
+/* ── Payment method toggle ───────────────────────────────────── */
+let selectedMethod = 'cod'; // default
+
+function selectMethod(method) {
+  selectedMethod = method;
+
+  // Update row highlight
+  document.getElementById('method-cod').classList.toggle('active',  method === 'cod');
+  document.getElementById('method-card').classList.toggle('active', method === 'card');
+
+  // Swap action button
+  document.getElementById('cod-button').style.display = method === 'cod'  ? 'block' : 'none';
+  document.getElementById('pay-button').style.display = method === 'card' ? 'block' : 'none';
+}
+
+/* ── COD: place order via POST ───────────────────────────────── */
+document.addEventListener("DOMContentLoaded", function() {
+
+  document.getElementById("cod-button").addEventListener("click", function(e) {
+    e.preventDefault();
+    fetch("{% url 'payments' %}", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+      body: JSON.stringify({
+        orderID:        orderID,
+        payment_method: "COD",
+      })
+    }).then(r => r.json()).then(data => {
+      window.location.href = "{% url 'order_complete' %}?order_number=" + data.order_number + "&payment_id=" + data.transID;
+    });
   });
-};
+
+  /* ── Razorpay: open checkout ─────────────────────────────── */
+  const rzpOptions = {
+    key:         "{{ razorpay_key }}",
+    amount:      {{ razorpay_amount }},
+    currency:    "INR",
+    name:        "Threadify",
+    description: "Order #" + orderID,
+    order_id:    "{{ razorpay_order_id }}",
+    handler: function(response) {
+      fetch("{% url 'payments' %}", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+        body: JSON.stringify({
+          orderID:              orderID,
+          razorpay_payment_id:  response.razorpay_payment_id,
+          razorpay_order_id:    response.razorpay_order_id,
+          razorpay_signature:   response.razorpay_signature,
+          payment_method:       "Razorpay",
+        })
+      }).then(r => r.json()).then(data => {
+        window.location.href = "{% url 'order_complete' %}?order_number=" + data.order_number + "&payment_id=" + data.transID;
+      });
+    },
+    prefill: {
+      name:    "{{ order.full_name }}",
+      email:   "{{ order.email }}",
+      contact: "{{ order.phone }}",
+    },
+    theme: { color: "#C9A84C" }
+  };
+
+  const rzp = new Razorpay(rzpOptions);
+
+  document.getElementById("pay-button").addEventListener("click", function(e) {
+    e.preventDefault();
+    rzp.open();
+  });
+
+});
 </script>
 {% endblock %}

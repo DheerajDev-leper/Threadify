@@ -1,14 +1,21 @@
 import datetime
 import json
 
+import razorpay
+from django.conf import settings
 from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
 
 from carts.models import CartItem
 from orders.models import Order, OrderProduct, Payment
 from .forms import OrderForm
+
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+)
 
 
 def place_order(request, total=0, quantity=0):
@@ -61,18 +68,30 @@ def place_order(request, total=0, quantity=0):
                 order_number=order_number
             )
 
+            # Create Razorpay order (amount in paise)
+            razorpay_order = razorpay_client.order.create({
+                'amount': int(grand_total * 100),
+                'currency': 'INR',
+                'receipt': order_number,
+                'payment_capture': 1,
+            })
+
             context = {
                 'order': order,
                 'cart_items': cart_items,
                 'total': total,
                 'tax': tax,
                 'grand_total': grand_total,
+                'razorpay_key': settings.RAZORPAY_KEY_ID,
+                'razorpay_order_id': razorpay_order['id'],
+                'razorpay_amount': int(grand_total * 100),
             }
             return render(request, 'payments.html', context)
 
     return redirect('checkout')
 
 
+@csrf_exempt
 def payments(request):
     body = json.loads(request.body)
 
@@ -85,12 +104,35 @@ def payments(request):
     except Order.DoesNotExist:
         return JsonResponse({'error': 'Order not found'}, status=400)
 
+    payment_method = body.get('payment_method', 'Razorpay')
+
+    if payment_method == 'COD':
+        trans_id = 'COD'
+        status = 'COMPLETED'
+    else:
+        # Verify Razorpay signature
+        razorpay_payment_id = body.get('razorpay_payment_id', '')
+        razorpay_order_id   = body.get('razorpay_order_id', '')
+        razorpay_signature  = body.get('razorpay_signature', '')
+
+        try:
+            razorpay_client.utility.verify_payment_signature({
+                'razorpay_order_id':   razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature':  razorpay_signature,
+            })
+        except razorpay.errors.SignatureVerificationError:
+            return JsonResponse({'error': 'Invalid payment signature'}, status=400)
+
+        trans_id = razorpay_payment_id
+        status   = 'COMPLETED'
+
     payment = Payment.objects.create(
         user=request.user,
-        payment_id="COD",
-        payment_method="Cash on Delivery",
+        payment_id=trans_id,
+        payment_method=payment_method,
         amount_paid=order.order_total,
-        status="COMPLETED",
+        status=status,
     )
 
     order.payment = payment
@@ -100,7 +142,6 @@ def payments(request):
     cart_items = CartItem.objects.filter(user=request.user)
 
     for item in cart_items:
-        # Use variation price if available, otherwise fall back to base price
         variation_price = item.variation.filter(price__isnull=False).values_list('price', flat=True).first()
         unit_price = variation_price if variation_price else item.product.price
 
@@ -130,7 +171,7 @@ def payments(request):
 
     return JsonResponse({
         'order_number': order.order_number,
-        'transID': payment.payment_id,
+        'transID': trans_id,
     })
 
 
@@ -147,7 +188,6 @@ def order_complete(request):
             for item in ordered_products
         )
 
-        # Use the payment already attached to the order — don't create a new one
         payment = order.payment
 
         context = {
@@ -157,7 +197,7 @@ def order_complete(request):
             'transID': transID,
             'payment': payment,
             'subtotal': subtotal,
-            'cart_items': ordered_products,  # template uses cart_items to render rows
+            'cart_items': ordered_products,
         }
         return render(request, 'order_complete.html', context)
 

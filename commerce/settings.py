@@ -155,10 +155,14 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
 
+RAZORPAY_KEY_ID     = config('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET')
+
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     "https://*.ngrok-free.dev",
 ]
+
 
 # RAZORPAY_KEY_ID = 'rzp_test_SEsDPcqlgjvtJA'
 # RAZORPAY_KEY_SECRET = 'BqVXBn1pFj8rm7w8AeyQHAqu'
