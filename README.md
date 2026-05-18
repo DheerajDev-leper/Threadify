@@ -21,6 +21,8 @@ https://github.com/DheerajDev-leper/Clothing
 * 🛠️ Admin Panel for Product Management
 * 📧 Email Notifications
 * ⭐ Product Reviews & Ratings
+* 💳 Payment Gateway Integration (Stripe/Razorpay)
+
 
 
 
@@ -122,8 +124,6 @@ python manage.py runserver
 
 ## 📦 Future Improvements
 
-* 💳 Payment Gateway Integration (Stripe/Razorpay)
-* 📊 Dashboard Analytics
 * Will try adding AI features too.
 ---
 
