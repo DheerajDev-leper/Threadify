@@ -2,6 +2,7 @@ from urllib import request
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
+from accounts.models import UserProfile
 from carts.models import Cart, CartItem
 from store.models import Product, Variation
 from django.contrib.auth.decorators import login_required
@@ -201,11 +202,14 @@ def checkout(request, total=0, quantity=0, cart_items=None):
     except Cart.DoesNotExist:
         pass
 
+    userprofile, created = UserProfile.objects.get_or_create(user=request.user)
+
     context = {
         'total':       total,
         'quantity':    quantity,
         'cart_items':  cart_items,
         'tax':         tax,
         'grand_total': grand_total,
+        'userprofile': userprofile,
     }
     return render(request, 'checkout.html', context=context)

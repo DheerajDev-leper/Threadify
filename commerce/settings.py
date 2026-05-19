@@ -162,6 +162,11 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     "https://*.ngrok-free.dev",
 ]
+CSRF_COOKIE_SECURE = False
+CSRF_USE_SESSIONS = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
 
 
 # RAZORPAY_KEY_ID = 'rzp_test_SEsDPcqlgjvtJA'
