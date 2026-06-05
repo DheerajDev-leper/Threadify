@@ -1,54 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<style>
-.payments-section{padding:5rem 0;}
-.pay-heading{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--text-dark);margin-bottom:0.5rem;letter-spacing:0.04em;}
-.pay-sub{font-size:0.72rem;letter-spacing:0.18em;color:var(--text-faint);margin-bottom:3rem;}
-.review-panel{background:var(--cream);border:1px solid var(--border-light);}
-.review-panel-header{padding:1.2rem 2rem;border-bottom:1px solid var(--border-light);font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-light);}
-.review-panel-body{padding:1.8rem 2rem;}
-.billing-info-name{font-family:var(--font-display);font-size:1.3rem;font-weight:400;color:var(--text-dark);margin-bottom:0.5rem;}
-.billing-info-detail{font-size:0.8rem;color:var(--text-light);letter-spacing:0.06em;line-height:1.9;font-weight:300;}
-.order-note-lux{border-left:2px solid var(--gold);padding:0.8rem 1.2rem;background:var(--gold-pale);font-size:0.78rem;color:var(--text-mid);margin-top:1rem;letter-spacing:0.04em;}
-.payment-method-row{border:1px solid var(--border-light);padding:1.2rem 1.6rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:all var(--t-fast);}
-.payment-method-row.active{border-color:var(--gold);background:var(--gold-pale);}
-.payment-method-row i{color:var(--gold);font-size:1.1rem;}
-.payment-method-label{font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-mid);font-weight:500;}
-.checkout-dark-panel{background:var(--charcoal);}
-.checkout-dark-inner{padding:2.5rem;}
-.checkout-dark-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;}
-.checkout-dark-line{display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.78rem;color:rgba(255,255,255,0.4);letter-spacing:0.08em;}
-.checkout-dark-line:last-of-type{border:none;}
-.checkout-dark-total{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--cream);display:flex;justify-content:space-between;align-items:baseline;padding:1.2rem 0;border-top:1px solid rgba(201,168,76,0.25);margin-top:0.5rem;}
-.checkout-dark-total span:last-child{color:var(--gold);}
-#cod-button,#pay-button{width:100%;padding:1.2rem;font-size:0.72rem;letter-spacing:0.25em;margin-top:1.5rem;position:relative;overflow:hidden;}
-#cod-button::after,#pay-button::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transform:translateX(-100%);transition:transform 0.6s var(--ease-luxury);}
-#cod-button:hover::after,#pay-button:hover::after{transform:translateX(100%);}
-.demo-notice{font-size:0.62rem;letter-spacing:0.12em;color:rgba(255,255,255,0.2);text-align:center;margin-top:1.2rem;border-top:1px solid rgba(255,255,255,0.05);padding-top:1.2rem;}
-.demo-notice strong{color:var(--gold);font-weight:400;}
 
-/* ── payment method rows gap ── */
-.payment-method-row + .payment-method-row { margin-top: 0.6rem; }
-
-/* ── PAYMENTS RESPONSIVE ────────────────────────────────────── */
-@media (max-width: 768px) {
-  .payments-section { padding: 3rem 0; }
-  .pay-heading { font-size: 2.2rem; }
-  .pay-sub { margin-bottom: 2rem; }
-  .review-panel-header { padding: 1rem 1.5rem; }
-  .review-panel-body { padding: 1.4rem 1.5rem; }
-  .checkout-dark-inner { padding: 1.8rem; }
-  .checkout-dark-total { font-size: 1.6rem; }
-  .review-panel .table-responsive { overflow-x: auto; }
-}
-
-@media (max-width: 576px) {
-  .pay-heading { font-size: 1.9rem; }
-  .review-panel-body { padding: 1.2rem 1rem; }
-  .checkout-dark-inner { padding: 1.4rem 1rem; }
-}
-</style>
 
 <div class="container payments-section">
   <div class="page-eyebrow" style="font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Review & Confirm</div>
@@ -170,94 +123,16 @@
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="{% static 'js/payments.js' %}" type="text/javascript"></script>
 <script>
-/* ── CSRF helper ─────────────────────────────────────────────── */
-function getCookie(name) {
-  let c = null;
-  if (document.cookie && document.cookie !== '') {
-    document.cookie.split(';').forEach(function(x) {
-      x = x.trim();
-      if (x.substring(0, name.length + 1) === (name + '=')) {
-        c = decodeURIComponent(x.substring(name.length + 1));
-      }
-    });
-  }
-  return c;
-}
-
-const csrftoken = getCookie('csrftoken');
-const orderID   = "{{ order.order_number }}";
-
-/* ── Payment method toggle ───────────────────────────────────── */
-let selectedMethod = 'cod'; // default
-
-function selectMethod(method) {
-  selectedMethod = method;
-
-  // Update row highlight
-  document.getElementById('method-cod').classList.toggle('active',  method === 'cod');
-  document.getElementById('method-card').classList.toggle('active', method === 'card');
-
-  // Swap action button
-  document.getElementById('cod-button').style.display = method === 'cod'  ? 'block' : 'none';
-  document.getElementById('pay-button').style.display = method === 'card' ? 'block' : 'none';
-}
-
-/* ── COD: place order via POST ───────────────────────────────── */
-document.addEventListener("DOMContentLoaded", function() {
-
-  document.getElementById("cod-button").addEventListener("click", function(e) {
-    e.preventDefault();
-    fetch("{% url 'payments' %}", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-      body: JSON.stringify({
-        orderID:        orderID,
-        payment_method: "COD",
-      })
-    }).then(r => r.json()).then(data => {
-      window.location.href = "{% url 'order_complete' %}?order_number=" + data.order_number + "&payment_id=" + data.transID;
-    });
-  });
-
-  /* ── Razorpay: open checkout ─────────────────────────────── */
-  const rzpOptions = {
-    key:         "{{ razorpay_key }}",
-    amount:      {{ razorpay_amount }},
-    currency:    "INR",
-    name:        "Threadify",
-    description: "Order #" + orderID,
-    order_id:    "{{ razorpay_order_id }}",
-    handler: function(response) {
-      fetch("{% url 'payments' %}", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-        body: JSON.stringify({
-          orderID:              orderID,
-          razorpay_payment_id:  response.razorpay_payment_id,
-          razorpay_order_id:    response.razorpay_order_id,
-          razorpay_signature:   response.razorpay_signature,
-          payment_method:       "Razorpay",
-        })
-      }).then(r => r.json()).then(data => {
-        window.location.href = "{% url 'order_complete' %}?order_number=" + data.order_number + "&payment_id=" + data.transID;
-      });
-    },
-    prefill: {
-      name:    "{{ order.full_name }}",
-      email:   "{{ order.email }}",
-      contact: "{{ order.phone }}",
-    },
-    theme: { color: "#C9A84C" }
-  };
-
-  const rzp = new Razorpay(rzpOptions);
-
-  document.getElementById("pay-button").addEventListener("click", function(e) {
-    e.preventDefault();
-    rzp.open();
-  });
-
+setPaymentData({
+  orderID: "{{ order.order_number }}",
+  razorpayKey: "{{ razorpay_key }}",
+  razorpayAmount: {{ razorpay_amount }},
+  razorpayOrderId: "{{ razorpay_order_id }}",
+  userName: "{{ order.full_name }}",
+  userEmail: "{{ order.email }}",
+  userPhone: "{{ order.phone }}"
 });
 </script>
 {% endblock %}
