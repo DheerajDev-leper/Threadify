@@ -1,0 +1,157 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.order_number }}{% endblock %}
+{% block page_title %}Order #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+
+  <!-- Left: order items + address -->
+  <div class="detail-main">
+
+    <!-- Items -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Order Items</h3>
+        <span class="card-badge">{{ order_products|length }} item{{ order_products|length|pluralize }}</span>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>Product</th><th>Variations</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+          {% for item in order_products %}
+          <tr>
+            <td>
+              <div class="product-cell">
+                {% if item.product.Image %}
+                <img src="{{ item.product.Image.url }}" alt="" class="product-thumb" />
+                {% endif %}
+                <span class="product-name">{{ item.product.product_name }}</span>
+              </div>
+            </td>
+            <td class="text-muted">
+              {% for v in item.variations.all %}
+              <span class="variation-tag">{{ v.variation_category|title }}: {{ v.variation_value }}</span>
+              {% endfor %}
+            </td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.product_price }}</td>
+            <td><span class="fw-600">₹{{ item.product_price }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Totals -->
+      <div class="order-totals">
+        <div class="order-total-row">
+          <span>Subtotal</span>
+          <span>₹{{ order.order_total|floatformat:0 }}</span>
+        </div>
+        <div class="order-total-row">
+          <span>Tax</span>
+          <span>₹{{ order.tax|floatformat:0 }}</span>
+        </div>
+        <div class="order-total-row order-total-final">
+          <span>Total</span>
+          <span>₹{{ order.order_total|floatformat:0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping address -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-header"><h3 class="card-title">Shipping Address</h3></div>
+      <div class="address-block">
+        <p class="fw-600">{{ order.full_name }}</p>
+        <p>{{ order.address_line_1 }}</p>
+        {% if order.address_line_2 %}<p>{{ order.address_line_2 }}</p>{% endif %}
+        <p>{{ order.city }}, {{ order.state }} – {{ order.order_note }}</p>
+        <p>{{ order.country }}</p>
+        <p class="text-muted" style="margin-top:6px">{{ order.phone }}</p>
+        <p class="text-muted">{{ order.email }}</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: status update + payment info -->
+  <div class="detail-side">
+
+    <!-- Status update -->
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Update Status</h3></div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Current Status</label>
+          <select name="status" class="form-select">
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Update Status</button>
+      </form>
+    </div>
+
+    <!-- Order meta -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-header"><h3 class="card-title">Order Info</h3></div>
+      <div class="meta-list">
+        <div class="meta-row">
+          <span class="meta-label">Order Date</span>
+          <span class="meta-value">{{ order.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Payment</span>
+          <span class="meta-value">
+            {% if order.payment %}
+            <span class="badge badge-green">{{ order.payment.payment_method }}</span>
+            {% else %}
+            <span class="badge badge-orange">Unpaid</span>
+            {% endif %}
+          </span>
+        </div>
+        {% if order.payment %}
+        <div class="meta-row">
+          <span class="meta-label">Transaction ID</span>
+          <span class="meta-value text-muted" style="font-size:11px;word-break:break-all">{{ order.payment.payment_id }}</span>
+        </div>
+        {% endif %}
+        <div class="meta-row">
+          <span class="meta-label">IP Address</span>
+          <span class="meta-value text-muted">{{ order.ip }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer info -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-header"><h3 class="card-title">Customer</h3></div>
+      <div class="meta-list">
+        <div class="meta-row">
+          <span class="meta-label">Name</span>
+          <span class="meta-value fw-600">{{ order.full_name }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Email</span>
+          <span class="meta-value text-muted">{{ order.email }}</span>
+        </div>
+        {% if order.user %}
+        <div style="margin-top:12px">
+          <a href="{% url 'admin_customer_detail' order.user.pk %}" class="btn btn-ghost btn-sm" style="width:100%;text-align:center">View Customer</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:16px">
+  <a href="{% url 'admin_order_list' %}" class="btn btn-ghost btn-sm">← Back to Orders</a>
+</div>
+{% endblock %}

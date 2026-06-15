@@ -1,0 +1,164 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ customer.full_name }}{% endblock %}
+{% block page_title %}Customer Profile{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+
+  <!-- Left: orders + reviews -->
+  <div class="detail-main">
+
+    <!-- Orders -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Order History</h3>
+        <span class="card-badge">{{ orders|length }} order{{ orders|length|pluralize }}</span>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>Order #</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td><span class="fw-600">#{{ order.order_number }}</span></td>
+            <td>₹{{ order.order_total|floatformat:0 }}</td>
+            <td><span class="status-pill status-{{ order.status|lower }}">{{ order.status }}</span></td>
+            <td class="text-muted">{{ order.created_at|date:"d M Y" }}</td>
+            <td><a href="{% url 'admin_order_detail' order.pk %}" class="table-action">View</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="empty-row">No orders yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Reviews -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">
+        <h3 class="card-title">Reviews</h3>
+        <span class="card-badge">{{ reviews|length }}</span>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>Product</th><th>Rating</th><th>Subject</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          {% for review in reviews %}
+          <tr>
+            <td>{{ review.product.product_name }}</td>
+            <td>
+              <div class="star-row">
+                {% for i in "12345" %}
+                <span class="star {% if forloop.counter <= review.rating %}star-filled{% endif %}">★</span>
+                {% endfor %}
+              </div>
+            </td>
+            <td>{{ review.subject }}</td>
+            <td>
+              {% if review.status %}
+              <span class="status-dot status-dot-green">Approved</span>
+              {% else %}
+              <span class="status-dot status-dot-red">Hidden</span>
+              {% endif %}
+            </td>
+            <td class="text-muted">{{ review.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="empty-row">No reviews yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Right: profile card + stats -->
+  <div class="detail-side">
+
+    <!-- Profile card -->
+    <div class="card">
+      <div class="customer-profile-card">
+        <div class="customer-avatar-lg">{{ customer.first_name|first|upper }}</div>
+        <div class="customer-profile-name">{{ customer.full_name }}</div>
+        <div class="customer-profile-email text-muted">{{ customer.email }}</div>
+        <div style="margin-top:12px">
+          {% if customer.is_active %}
+          <span class="status-dot status-dot-green">Active Account</span>
+          {% else %}
+          <span class="status-dot status-dot-red">Inactive Account</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="meta-list" style="margin-top:16px">
+        <div class="meta-row">
+          <span class="meta-label">Phone</span>
+          <span class="meta-value">{{ customer.phone_number|default:"—" }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Joined</span>
+          <span class="meta-value text-muted">{{ customer.date_joined|date:"d M Y" }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Last Login</span>
+          <span class="meta-value text-muted">{{ customer.last_login|date:"d M Y, H:i"|default:"Never" }}</span>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <a href="{% url 'admin_customer_toggle' customer.pk %}"
+           class="btn btn-sm {% if customer.is_active %}btn-danger{% else %}btn-primary{% endif %}"
+           style="width:100%;text-align:center"
+           onclick="return confirm('{% if customer.is_active %}Deactivate{% else %}Activate{% endif %} this account?')">
+          {% if customer.is_active %}Deactivate Account{% else %}Activate Account{% endif %}
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-header"><h3 class="card-title">Spend Summary</h3></div>
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-value">{{ orders|length }}</div>
+          <div class="mini-stat-label">Total Orders</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value">₹{{ total_spent|floatformat:0 }}</div>
+          <div class="mini-stat-label">Total Spent</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-value">{{ reviews|length }}</div>
+          <div class="mini-stat-label">Reviews</div>
+        </div>
+      </div>
+    </div>
+
+    {% if profile %}
+    <div class="card" style="margin-top:16px">
+      <div class="card-header"><h3 class="card-title">Profile Info</h3></div>
+      <div class="meta-list">
+        {% if profile.address_line_1 %}
+        <div class="meta-row">
+          <span class="meta-label">Address</span>
+          <span class="meta-value text-muted">{{ profile.address_line_1 }}, {{ profile.city }}</span>
+        </div>
+        {% endif %}
+        {% if profile.country %}
+        <div class="meta-row">
+          <span class="meta-label">Country</span>
+          <span class="meta-value">{{ profile.country }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<div style="margin-top:16px">
+  <a href="{% url 'admin_customer_list' %}" class="btn btn-ghost btn-sm">← Back to Customers</a>
+</div>
+{% endblock %}

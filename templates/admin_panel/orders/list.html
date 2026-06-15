@@ -1,0 +1,77 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+  <form method="get" class="filter-form">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Order #, name, email…" class="form-input search-input" />
+    </div>
+    <select name="status" class="form-select">
+      <option value="">All Statuses</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    {% if request.GET.q or status_filter %}
+    <a href="{% url 'admin_order_list' %}" class="btn btn-ghost btn-sm">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>Customer</th>
+        <th>Email</th>
+        <th>Total</th>
+        <th>Payment</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td><span class="fw-600">#{{ order.order_number }}</span></td>
+        <td>{{ order.full_name }}</td>
+        <td class="text-muted">{{ order.email }}</td>
+        <td>₹{{ order.order_total|floatformat:0 }}</td>
+        <td>
+          {% if order.payment %}
+          <span class="badge badge-green">Paid</span>
+          {% else %}
+          <span class="badge badge-orange">Pending</span>
+          {% endif %}
+        </td>
+        <td><span class="status-pill status-{{ order.status|lower }}">{{ order.status }}</span></td>
+        <td class="text-muted">{{ order.created_at|date:"d M Y" }}</td>
+        <td><a href="{% url 'admin_order_detail' order.pk %}" class="table-action">View</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="empty-row">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if orders.has_other_pages %}
+  <div class="pagination">
+    {% if orders.has_previous %}
+    <a href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="page-btn">← Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ orders.number }} of {{ orders.paginator.num_pages }}</span>
+    {% if orders.has_next %}
+    <a href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="page-btn">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
