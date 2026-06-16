@@ -86,3 +86,47 @@ function initFormValidation() {
     }
   });
 }
+const colorMap = {
+  'black':      '#1a1a1a',
+  'white':      '#f5f5f5',
+  'navy':       '#1b2a4a',
+  'navy blue':  '#1b2a4a',
+  'blue':       '#2d6aad',
+  'red':        '#c0392b',
+  'green':      '#2e7d4f',
+  'brown':      '#6b3f2a',
+  'gold':       '#c9a84c',
+  'grey':       '#8a8a8a',
+  'gray':       '#8a8a8a',
+  'pink':       '#e8a0b0',
+  'purple':     '#6b4fa0',
+  'orange':     '#d4622a',
+  'yellow':     '#d4a017',
+  'cream':      '#faf8f4',
+  'beige':      '#d9c9a8',
+  'maroon':     '#6b1a1a',
+  'teal':       '#1d9e75',
+  'olive':      '#6b7a2a',
+};
+
+function selectColor(el) {
+// Apply color backgrounds from map
+  document.querySelectorAll('.color-swatch[data-color]').forEach(function(swatch) {
+    const key = swatch.dataset.color.trim().toLowerCase();
+    const hex = colorMap[key];
+    if (hex) {
+      swatch.style.background = hex;
+    } else {
+      // fallback: try using the value directly as CSS color
+      swatch.style.background = key;
+    }
+  });
+  el.classList.add('active');
+  const val = el.dataset.value;
+  document.getElementById('colorInput').value = val;
+  // Show selected color name in label
+  document.getElementById('colorLabel').textContent = val.charAt(0).toUpperCase() + val.slice(1);
+  // Update price if variant has its own price
+  const price = el.dataset.price;
+  if (price) updatePrice(price);
+}

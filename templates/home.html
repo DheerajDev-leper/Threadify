@@ -108,6 +108,9 @@
               <i class="fa fa-star{% if product.averageReview < 4.5 %}-o{% elif product.averageReview >= 4.5 and product.averageReview < 5 %}-half-o {% endif %}"></i>
             </span>
           </div>
+          {% if product.shop %}
+          <span class="pcard-seller">Sold by {{ product.shop.name }}</span>
+          {% endif %}
           <span class="pcard-price">Rs{{ product.price }}</span>
         </div>
         <div class="pcard-hover-bar">Add to Selection</div>

@@ -49,7 +49,17 @@
           {{ single_product.product_name }}
         </div>
 
-        <h1 class="product-name">{{ single_product.product_name }}</h1>
+        {% if single_product.shop %}
+        <div class="product-seller-badge">
+          <i class="fa fa-store" style="font-size:0.75rem;"></i>
+          Sold by <strong>{{ single_product.shop.name }}</strong>
+          &nbsp;·&nbsp;
+          <a href="{% url 'seller_store' single_product.shop.slug %}" 
+            style="color:var(--gold);text-decoration:underline;letter-spacing:0.05em;">
+            View all from this seller &rarr;
+          </a>
+        </div>
+        {% endif %}
 
         <div class="product-rating-row">
           <div class="rating-star">

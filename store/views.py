@@ -183,3 +183,36 @@ def submit_review(request, product_id):
             data.save()
             messages.success(request, 'Thank you for submitting your review.')
             return redirect(request.META.get('HTTP_REFERER'))
+        
+
+from .models import Product, ProductGallery, ReviewRating, Variation, Shop
+
+def seller_store(request, shop_slug):
+    shop = Shop.objects.get(slug=shop_slug)
+    products = Product.objects.filter(shop=shop, is_available=True).order_by('id')
+
+    products_count = products.count()
+    paginator = Paginator(products, 9)
+    page = request.GET.get('page')
+    paged_products = paginator.get_page(page)
+
+    available_sizes = Variation.objects.filter(
+        variation_category='size', is_active=True, product__shop=shop
+    ).values_list('variation_value', flat=True).distinct()
+
+    available_colors = Variation.objects.filter(
+        variation_category='color', is_active=True, product__shop=shop
+    ).values_list('variation_value', flat=True).distinct()
+
+    context = {
+        'shop': shop,
+        'products': paged_products,
+        'products_count': products_count,
+        'available_sizes': available_sizes,
+        'available_colors': available_colors,
+        'selected_sizes': [],
+        'selected_colors': [],
+        'min_price': '',
+        'max_price': '',
+    }
+    return render(request, 'seller_store.html', context)

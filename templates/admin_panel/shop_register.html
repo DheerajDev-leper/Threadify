@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Your Shop — StyleAdmin</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    a { color: inherit; text-decoration: none; }
+    svg { display: block; flex-shrink: 0; }
+
+    :root {
+      --bg:           #080a0f;
+      --surface:      #111318;
+      --surface-2:    #181c25;
+      --surface-3:    #1e2330;
+      --border:       rgba(255,255,255,0.06);
+      --border-2:     rgba(255,255,255,0.10);
+      --text:         #edf0f7;
+      --text-dim:     #8b95a8;
+      --text-muted:   #4e5668;
+      --purple:       #7c5cfc;
+      --purple-light: #9d80ff;
+      --purple-dim:   rgba(124,92,252,0.12);
+      --green:        #22c55e;
+      --green-dim:    rgba(34,197,94,0.12);
+      --red:          #ef4444;
+      --red-dim:      rgba(239,68,68,0.12);
+      --orange:       #f97316;
+      --radius-sm:    7px;
+      --radius:       10px;
+      --radius-lg:    14px;
+      --transition:   0.18s ease;
+    }
+
+    html { font-size: 15px; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Left panel ──────────────────────────────────────── */
+    .reg-left {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 44px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .reg-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,92,252,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,92,252,0.06) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    .reg-left::after {
+      content: '';
+      position: absolute;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .reg-brand {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .reg-brand-icon {
+      width: 34px; height: 34px;
+      border-radius: var(--radius-sm);
+      background: var(--purple-dim);
+      border: 1px solid rgba(124,92,252,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--purple-light);
+      box-shadow: 0 0 16px rgba(124,92,252,0.2);
+    }
+
+    .reg-brand-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 17px; letter-spacing: -0.4px;
+      background: linear-gradient(135deg, #fff 0%, var(--purple-light) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .reg-center {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; gap: 28px;
+    }
+
+    .reg-eyebrow {
+      font-size: 10.5px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: #4ade80; opacity: 0.8;
+    }
+
+    .reg-headline {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.1; letter-spacing: -1px; color: var(--text);
+    }
+
+    .reg-headline em {
+      font-style: normal;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Steps */
+    .reg-steps { display: flex; flex-direction: column; gap: 0; }
+
+    .reg-step {
+      display: flex; gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .reg-step:last-child { border-bottom: none; }
+
+    .reg-step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--purple-dim);
+      border: 1px solid rgba(124,92,252,0.3);
+      color: var(--purple-light);
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .reg-step-body {}
+    .reg-step-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+    .reg-step-desc  { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+
+    .reg-footer {
+      position: relative; z-index: 1;
+      font-size: 12px; color: var(--text-muted); line-height: 1.6;
+    }
+
+    /* ── Right panel ─────────────────────────────────────── */
+    .reg-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 36px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+
+    .reg-card {
+      width: 100%; max-width: 400px;
+    }
+
+    .reg-header { margin-bottom: 28px; }
+
+    .reg-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 24px;
+      letter-spacing: -0.6px; color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .reg-subtitle { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Section dividers */
+    .reg-section {
+      font-size: 10.5px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 18px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .reg-section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+
+    .reg-section svg { opacity: 0.5; }
+
+    /* Messages */
+    .reg-messages { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+
+    .reg-alert {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 13px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 500;
+    }
+
+    .reg-alert-error   { background: var(--red-dim);   border: 1px solid rgba(239,68,68,0.2);  color: #f87171; }
+    .reg-alert-success { background: var(--green-dim); border: 1px solid rgba(34,197,94,0.2);  color: #4ade80; }
+
+    /* Form */
+    .reg-form { display: flex; flex-direction: column; gap: 13px; }
+
+    .field-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .field-label {
+      font-size: 12.5px; font-weight: 600;
+      color: var(--text-dim); letter-spacing: 0.01em;
+    }
+
+    .field-wrap { position: relative; display: flex; align-items: center; }
+
+    .field-icon {
+      position: absolute; left: 11px;
+      color: var(--text-muted); pointer-events: none;
+      transition: color var(--transition);
+    }
+
+    .field-wrap:focus-within .field-icon { color: var(--purple-light); }
+
+    .field-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 13.5px; font-weight: 400;
+      padding: 8px 11px 8px 34px;
+      outline: none; appearance: none;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      font-family: inherit;
+    }
+
+    .field-input::placeholder { color: var(--text-muted); }
+
+    .field-input:hover   { border-color: rgba(255,255,255,0.14); background: var(--surface-3); }
+
+    .field-input:focus   {
+      border-color: rgba(124,92,252,0.55);
+      box-shadow: 0 0 0 3px rgba(124,92,252,0.1);
+      background: var(--surface-3);
+    }
+
+    .field-input-no-icon { padding-left: 11px; }
+
+    .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .field-hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Password strength */
+    .pw-strength { margin-top: 6px; }
+    .pw-bar-wrap { height: 3px; background: var(--surface-3); border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
+    .pw-bar      { height: 100%; border-radius: 99px; transition: width 0.3s ease, background 0.3s ease; width: 0%; }
+    .pw-label    { font-size: 10.5px; color: var(--text-muted); }
+
+    /* Toggle password */
+    .field-toggle {
+      position: absolute; right: 10px;
+      background: none; border: none;
+      color: var(--text-muted); cursor: pointer;
+      padding: 4px; border-radius: 4px;
+      transition: color var(--transition);
+      display: flex; align-items: center;
+    }
+
+    .field-toggle:hover { color: var(--text); }
+
+    /* Submit */
+    .reg-btn {
+      width: 100%; margin-top: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 20px;
+      background: var(--purple); color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124,92,252,0.35);
+      transition: all var(--transition);
+      position: relative; overflow: hidden;
+      font-family: inherit;
+    }
+
+    .reg-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+
+    .reg-btn:hover {
+      background: var(--purple-light);
+      box-shadow: 0 6px 28px rgba(124,92,252,0.5);
+      transform: translateY(-1px);
+    }
+
+    .reg-btn:hover::before { transform: translateX(100%); }
+    .reg-btn:active { transform: translateY(0); }
+
+    .reg-btn-spinner {
+      display: none; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .reg-btn.loading .reg-btn-text    { display: none; }
+    .reg-btn.loading .reg-btn-spinner { display: block; }
+
+    /* Login link */
+    .reg-login-link {
+      margin-top: 20px; text-align: center;
+      font-size: 12.5px; color: var(--text-muted);
+    }
+
+    .reg-login-link a { color: var(--purple-light); font-weight: 500; }
+    .reg-login-link a:hover { text-decoration: underline; }
+
+    /* Terms */
+    .terms-row {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 12px; color: var(--text-muted); line-height: 1.55;
+    }
+
+    .terms-checkbox {
+      width: 14px; height: 14px; margin-top: 1px;
+      accent-color: var(--purple); cursor: pointer; flex-shrink: 0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar              { width: 5px; }
+    ::-webkit-scrollbar-track        { background: transparent; }
+    ::-webkit-scrollbar-thumb        { background: var(--surface-3); border-radius: 99px; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; }
+      .reg-left { display: none; }
+      .reg-right { min-height: 100vh; padding: 32px 20px; }
+    }
+
+    @media (max-width: 480px) {
+      .field-grid-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left panel -->
+  <div class="reg-left">
+    <div class="reg-brand">
+      <div class="reg-brand-icon">✦</div>
+      <span class="reg-brand-name">StyleAdmin</span>
+    </div>
+
+    <div class="reg-center">
+      <span class="reg-eyebrow">Shop Owner Portal</span>
+      <h1 class="reg-headline">Start selling on<br/><em>your own terms.</em></h1>
+
+      <div class="reg-steps">
+        <div class="reg-step">
+          <div class="reg-step-num">1</div>
+          <div class="reg-step-body">
+            <div class="reg-step-title">Create your account</div>
+            <div class="reg-step-desc">Fill in your personal and shop details below.</div>
+          </div>
+        </div>
+        <div class="reg-step">
+          <div class="reg-step-num">2</div>
+          <div class="reg-step-body">
+            <div class="reg-step-title">Wait for approval</div>
+            <div class="reg-step-desc">The super admin reviews and approves your shop — usually within 24 hours.</div>
+          </div>
+        </div>
+        <div class="reg-step">
+          <div class="reg-step-num">3</div>
+          <div class="reg-step-body">
+            <div class="reg-step-title">Start managing</div>
+            <div class="reg-step-desc">Log in and add products, track orders, and monitor your revenue.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="reg-footer">
+      By registering you agree to StyleAdmin's terms of service.<br/>
+      Your data is never shared with third parties.
+    </p>
+  </div>
+
+  <!-- Right panel — form -->
+  <div class="reg-right">
+    <div class="reg-card">
+
+      <div class="reg-header">
+        <h2 class="reg-title">Create your shop</h2>
+        <p class="reg-subtitle">Set up your shop owner account. Approval takes up to 24 hours.</p>
+      </div>
+
+      {% if messages %}
+      <div class="reg-messages">
+        {% for message in messages %}
+        <div class="reg-alert {% if 'error' in message.tags %}reg-alert-error{% else %}reg-alert-success{% endif %}">
+          {% if 'error' in message.tags %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {% else %}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          {% endif %}
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" class="reg-form" id="regForm" novalidate>
+        {% csrf_token %}
+
+        <!-- Personal info -->
+        <div class="reg-section">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Your Details
+        </div>
+
+        <div class="field-grid-2">
+          <div class="field-group">
+            <label class="field-label">First Name <span style="color:#ef4444">*</span></label>
+            <div class="field-wrap">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" name="first_name" value="{{ post.first_name }}"
+                     class="field-input" placeholder="Priya" required />
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Last Name <span style="color:#ef4444">*</span></label>
+            <div class="field-wrap">
+              <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" name="last_name" value="{{ post.last_name }}"
+                     class="field-input" placeholder="Sharma" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Email Address <span style="color:#ef4444">*</span></label>
+          <div class="field-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" name="email" value="{{ post.email }}"
+                   class="field-input" placeholder="priya@example.com"
+                   autocomplete="email" required />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Phone Number</label>
+          <div class="field-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <input type="tel" name="phone" value="{{ post.phone }}"
+                   class="field-input" placeholder="+91 98765 43210" />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="field-group">
+          <label class="field-label">Password <span style="color:#ef4444">*</span></label>
+          <div class="field-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <input type="password" name="password" id="pw1"
+                   class="field-input" placeholder="Min. 8 characters"
+                   autocomplete="new-password" required
+                   oninput="checkStrength(this.value)" />
+            <button type="button" class="field-toggle" onclick="togglePw('pw1', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength">
+            <div class="pw-bar-wrap"><div class="pw-bar" id="pwBar"></div></div>
+            <span class="pw-label" id="pwLabel">Enter a password</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Confirm Password <span style="color:#ef4444">*</span></label>
+          <div class="field-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <input type="password" name="password2" id="pw2"
+                   class="field-input" placeholder="Repeat password"
+                   autocomplete="new-password" required />
+            <button type="button" class="field-toggle" onclick="togglePw('pw2', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Shop info -->
+        <div class="reg-section">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Shop Details
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Shop Name <span style="color:#ef4444">*</span></label>
+          <div class="field-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            <input type="text" name="shop_name" value="{{ post.shop_name }}"
+                   class="field-input" placeholder="e.g. Priya's Boutique" required />
+          </div>
+          <span class="field-hint">This is what customers will see.</span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Shop Description</label>
+          <textarea name="shop_description" rows="3"
+                    style="width:100%;background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text);font-size:13.5px;padding:8px 11px;outline:none;resize:vertical;font-family:inherit;transition:border-color .18s ease,box-shadow .18s ease;"
+                    placeholder="Tell us what your shop sells…"
+                    onfocus="this.style.borderColor='rgba(124,92,252,0.55)';this.style.boxShadow='0 0 0 3px rgba(124,92,252,0.1)'"
+                    onblur="this.style.borderColor='';this.style.boxShadow=''">{{ post.shop_description }}</textarea>
+        </div>
+
+        <!-- Terms -->
+        <label class="terms-row">
+          <input type="checkbox" name="terms" class="terms-checkbox" required />
+          I agree to StyleAdmin's terms of service and understand my shop will be reviewed before activation.
+        </label>
+
+        <button type="submit" class="reg-btn" id="regBtn">
+          <span class="reg-btn-text">Submit for Approval</span>
+          <div class="reg-btn-spinner"></div>
+        </button>
+      </form>
+
+      <div class="reg-login-link">
+        Already have an account? <a href="{% url 'admin_login' %}">Sign in →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Password strength meter */
+    function checkStrength(pw) {
+      const bar   = document.getElementById('pwBar');
+      const label = document.getElementById('pwLabel');
+      let score   = 0;
+      if (pw.length >= 8)  score++;
+      if (pw.length >= 12) score++;
+      if (/[A-Z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+      const levels = [
+        { pct: '0%',   color: '',              text: 'Enter a password' },
+        { pct: '25%',  color: '#ef4444',       text: 'Too weak' },
+        { pct: '50%',  color: '#f97316',       text: 'Fair' },
+        { pct: '75%',  color: '#eab308',       text: 'Good' },
+        { pct: '100%', color: '#22c55e',       text: 'Strong' },
+      ];
+
+      const lvl = levels[Math.min(score, 4)];
+      bar.style.width      = lvl.pct;
+      bar.style.background = lvl.color;
+      label.textContent    = lvl.text;
+      label.style.color    = lvl.color || '#4e5668';
+    }
+
+    /* Toggle password visibility */
+    function togglePw(id, btn) {
+      const input = document.getElementById(id);
+      input.type  = input.type === 'password' ? 'text' : 'password';
+    }
+
+    /* Loading state on submit */
+    const regForm = document.getElementById('regForm');
+    const regBtn  = document.getElementById('regBtn');
+
+    if (regForm && regBtn) {
+      regForm.addEventListener('submit', function (e) {
+        const pw1 = document.getElementById('pw1').value;
+        const pw2 = document.getElementById('pw2').value;
+        if (pw1 !== pw2) {
+          e.preventDefault();
+          alert('Passwords do not match.');
+          return;
+        }
+        const terms = document.querySelector('[name="terms"]');
+        if (terms && !terms.checked) {
+          e.preventDefault();
+          alert('Please agree to the terms of service.');
+          return;
+        }
+        regBtn.classList.add('loading');
+        regBtn.disabled = true;
+      });
+    }
+  </script>
+
+</body>
+</html>

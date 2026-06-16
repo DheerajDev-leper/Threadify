@@ -5,6 +5,40 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+
+<!-- Pending shops alert (super admin only) -->
+{% if is_super and pending_shops %}
+<div class="pending-banner" style="margin-bottom:20px">
+  <div class="pending-banner-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  </div>
+  <span>
+    <strong>{{ pending_shops|length }} shop application{{ pending_shops|length|pluralize }}</strong>
+    pending your approval.
+  </span>
+  <a href="{% url 'admin_shop_owner_list' %}" class="pending-banner-link">Review now →</a>
+</div>
+{% endif %}
+
+<!-- Shop owner scoped banner -->
+{% if not is_super %}
+<div class="shop-owner-banner">
+  <div class="shop-owner-banner-inner">
+    <div class="shop-owner-banner-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div>
+      <div class="shop-owner-banner-name">{{ request.user.shop.name }}</div>
+      <div class="shop-owner-banner-sub">Showing data for your shop only</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <!-- Stat Cards -->
 <div class="stats-grid">
   <div class="stat-card stat-purple">
@@ -14,7 +48,7 @@
     <div class="stat-body">
       <div class="stat-label">Total Revenue</div>
       <div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div>
-      <div class="stat-sub">All time</div>
+      <div class="stat-sub">{% if is_super %}Platform-wide{% else %}Your shop{% endif %}</div>
     </div>
   </div>
   <div class="stat-card stat-blue">
@@ -24,7 +58,7 @@
     <div class="stat-body">
       <div class="stat-label">Total Orders</div>
       <div class="stat-value">{{ total_orders }}</div>
-      <div class="stat-sub">All time</div>
+      <div class="stat-sub">{% if is_super %}All orders{% else %}Containing your products{% endif %}</div>
     </div>
   </div>
   <div class="stat-card stat-green">
@@ -34,7 +68,7 @@
     <div class="stat-body">
       <div class="stat-label">Products</div>
       <div class="stat-value">{{ total_products }}</div>
-      <div class="stat-sub">In catalogue</div>
+      <div class="stat-sub">{% if is_super %}All catalogues{% else %}In your shop{% endif %}</div>
     </div>
   </div>
   <div class="stat-card stat-orange">
@@ -42,9 +76,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
     </div>
     <div class="stat-body">
-      <div class="stat-label">Customers</div>
+      <div class="stat-label">{% if is_super %}Customers{% else %}Buyers{% endif %}</div>
       <div class="stat-value">{{ total_customers }}</div>
-      <div class="stat-sub">Registered</div>
+      <div class="stat-sub">{% if is_super %}Registered{% else %}Ordered from you{% endif %}</div>
     </div>
   </div>
 </div>
@@ -68,7 +102,7 @@
   </div>
 </div>
 
-<!-- Orders sparkline + low stock -->
+<!-- Sparkline + Top Products -->
 <div class="charts-row">
   <div class="card chart-card-sm">
     <div class="card-header">
@@ -98,7 +132,7 @@
   </div>
 </div>
 
-<!-- Recent orders + Low stock -->
+<!-- Recent Orders + Low Stock -->
 <div class="charts-row">
   <div class="card chart-card-lg">
     <div class="card-header">
@@ -106,7 +140,15 @@
       <a href="{% url 'admin_order_list' %}" class="card-link">View all →</a>
     </div>
     <table class="table">
-      <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th></th></tr></thead>
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
       <tbody>
         {% for order in recent_orders %}
         <tr>
@@ -137,10 +179,43 @@
       <span class="stock-count {% if p.stock == 0 %}stock-out{% endif %}">{{ p.stock }}</span>
     </div>
     {% empty %}
-    <p class="empty-row">All products are well stocked 🎉</p>
+    <p class="empty-row">All products well stocked 🎉</p>
     {% endfor %}
   </div>
 </div>
+
+<!-- Super admin: pending shops quick view -->
+{% if is_super and pending_shops %}
+<div class="card" style="margin-top:4px">
+  <div class="card-header">
+    <h3 class="card-title">Pending Shop Applications</h3>
+    <a href="{% url 'admin_shop_owner_list' %}" class="card-link">Manage all →</a>
+  </div>
+  <table class="table">
+    <thead><tr><th>Shop</th><th>Owner</th><th>Email</th><th>Applied</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for shop in pending_shops %}
+      <tr>
+        <td class="fw-600">{{ shop.name }}</td>
+        <td>{{ shop.owner.full_name }}</td>
+        <td class="text-muted">{{ shop.owner.email }}</td>
+        <td class="text-muted">{{ shop.created_at|date:"d M Y" }}</td>
+        <td>
+          <div class="action-group">
+            <a href="{% url 'admin_shop_approve' shop.pk %}"
+               class="table-action table-action-success"
+               onclick="return confirm('Approve {{ shop.name }}?')">Approve</a>
+            <a href="{% url 'admin_shop_reject' shop.pk %}"
+               class="table-action table-action-danger">Reject</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -160,8 +235,8 @@ new Chart(document.getElementById('revenueChart'), {
     datasets: [{
       label: 'Revenue (₹)',
       data: monthlyRevenue,
-      backgroundColor: 'rgba(139, 92, 246, 0.7)',
-      borderColor: '#8b5cf6',
+      backgroundColor: 'rgba(124, 92, 252, 0.65)',
+      borderColor: '#7c5cfc',
       borderWidth: 2,
       borderRadius: 6,
     }]
@@ -170,8 +245,8 @@ new Chart(document.getElementById('revenueChart'), {
     responsive: true,
     plugins: { legend: { display: false } },
     scales: {
-      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-      x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8b95a8' } },
+      x: { grid: { display: false }, ticks: { color: '#8b95a8' } }
     }
   }
 });
@@ -183,7 +258,7 @@ new Chart(document.getElementById('statusChart'), {
     labels: statusLabels,
     datasets: [{
       data: statusCounts,
-      backgroundColor: ['#8b5cf6','#3b82f6','#22c55e','#ef4444'],
+      backgroundColor: ['#7c5cfc','#3b82f6','#22c55e','#ef4444'],
       borderWidth: 0,
       hoverOffset: 8,
     }]
@@ -191,7 +266,7 @@ new Chart(document.getElementById('statusChart'), {
   options: {
     responsive: true,
     plugins: {
-      legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } }
+      legend: { position: 'bottom', labels: { color: '#8b95a8', padding: 12, font: { size: 11 } } }
     },
     cutout: '65%',
   }
@@ -206,7 +281,7 @@ new Chart(document.getElementById('sparklineChart'), {
       label: 'Orders',
       data: dailyOrders,
       borderColor: '#22c55e',
-      backgroundColor: 'rgba(34,197,94,0.15)',
+      backgroundColor: 'rgba(34,197,94,0.12)',
       tension: 0.4,
       fill: true,
       pointRadius: 4,
@@ -217,8 +292,8 @@ new Chart(document.getElementById('sparklineChart'), {
     responsive: true,
     plugins: { legend: { display: false } },
     scales: {
-      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } },
-      x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#8b95a8', stepSize: 1 } },
+      x: { grid: { display: false }, ticks: { color: '#8b95a8' } }
     }
   }
 });

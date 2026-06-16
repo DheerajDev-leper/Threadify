@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Avg, Count
 from django.urls import reverse
 from category.models import Category
+from django.conf import settings
 from accounts.models import Account
 
 # Create your models here.
@@ -16,6 +17,14 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
+
+    shop = models.ForeignKey(
+    'Shop',
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='products',
+    )
 
     def get_url(self):
         return reverse('product_detail', args=[self.category.slug, self.slug])
@@ -86,3 +95,20 @@ class ProductGallery(models.Model):
     class Meta:
         verbose_name = 'productgallery'
         verbose_name_plural = 'product gallery'
+
+
+class Shop(models.Model):
+    owner        = models.OneToOneField(
+                       settings.AUTH_USER_MODEL,
+                       on_delete=models.CASCADE,
+                       related_name='shop',
+                   )
+    name         = models.CharField(max_length=150)
+    slug         = models.SlugField(unique=True)
+    description  = models.TextField(blank=True)
+    logo         = models.ImageField(upload_to='shop_logos/', blank=True, null=True)
+    is_approved  = models.BooleanField(default=False)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
