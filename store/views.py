@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
@@ -9,7 +11,7 @@ from django.db.models import Q
 from orders.models import OrderProduct
 
 from .forms import ReviewForm
-from .models import Product, ProductGallery, ReviewRating, Variation
+from .models import Product, ProductGallery, ReviewRating, ProductVariant, Shop
 from django.core.paginator import Paginator
 
 
@@ -26,18 +28,16 @@ def store(request, category_slug=None):
     selected_sizes = request.GET.getlist('size')
     if selected_sizes:
         products = products.filter(
-            variation__variation_category='size',
-            variation__variation_value__in=selected_sizes,
-            variation__is_active=True
+            variants__size__in=selected_sizes,
+            variants__is_active=True
         ).distinct()
 
     # ── Color filter ─────────────────────────────────
     selected_colors = request.GET.getlist('color')
     if selected_colors:
         products = products.filter(
-            variation__variation_category='color',
-            variation__variation_value__in=selected_colors,
-            variation__is_active=True
+            variants__color__in=selected_colors,
+            variants__is_active=True
         ).distinct()
 
     # ── Price range filter ───────────────────────────
@@ -60,17 +60,15 @@ def store(request, category_slug=None):
 
     # ── Available filter options (for the drawer) ────
     # Get all sizes and colors that exist for available products
-    available_sizes = Variation.objects.filter(
-        variation_category='size',
+    available_sizes = ProductVariant.objects.filter(
         is_active=True,
         product__is_available=True
-    ).values_list('variation_value', flat=True).distinct().order_by('variation_value')
+    ).exclude(size='').values_list('size', flat=True).distinct().order_by('size')
 
-    available_colors = Variation.objects.filter(
-        variation_category='color',
+    available_colors = ProductVariant.objects.filter(
         is_active=True,
         product__is_available=True
-    ).values_list('variation_value', flat=True).distinct().order_by('variation_value')
+    ).exclude(color='').values_list('color', flat=True).distinct().order_by('color')
 
     context = {
         'products':        paged_products,
@@ -114,12 +112,31 @@ def product_detail(request, category_slug, product_slug):
     reviews        = ReviewRating.objects.filter(product_id=single_product.id, status=True)
     product_gallery = ProductGallery.objects.filter(product_id=single_product.id)
 
+    # ── Variant picker data ───────────────────────────
+    # One JSON blob describing every active colour/size combination, so the
+    # page can disable combinations that don't exist or are out of stock —
+    # the same behaviour you'd see on a marketplace product page.
+    active_variants = single_product.variants.filter(is_active=True)
+    variants_json = json.dumps([
+        {
+            'id': v.id,
+            'color': v.color,
+            'size': v.size,
+            'price': float(v.effective_price),
+            'stock': v.stock,
+        }
+        for v in active_variants
+    ])
+
     context = {
         'single_product':  single_product,
         'in_cart':         in_cart,
         'orderproduct':    orderproduct,
         'reviews':         reviews,
         'product_gallery': product_gallery,
+        'colors':          single_product.available_colors(),
+        'sizes':           single_product.available_sizes(),
+        'variants_json':   variants_json,
     }
     return render(request, 'product_detail.html', context)
 
@@ -137,13 +154,13 @@ def search(request):
             products_count = products.count()
 
     # Reuse same filter options for search results page
-    available_sizes = Variation.objects.filter(
-        variation_category='size', is_active=True
-    ).values_list('variation_value', flat=True).distinct()
+    available_sizes = ProductVariant.objects.filter(
+        is_active=True
+    ).exclude(size='').values_list('size', flat=True).distinct()
 
-    available_colors = Variation.objects.filter(
-        variation_category='color', is_active=True
-    ).values_list('variation_value', flat=True).distinct()
+    available_colors = ProductVariant.objects.filter(
+        is_active=True
+    ).exclude(color='').values_list('color', flat=True).distinct()
 
     context = {
         'products':        products,
@@ -185,8 +202,6 @@ def submit_review(request, product_id):
             return redirect(request.META.get('HTTP_REFERER'))
         
 
-from .models import Product, ProductGallery, ReviewRating, Variation, Shop
-
 def seller_store(request, shop_slug):
     shop = Shop.objects.get(slug=shop_slug)
     products = Product.objects.filter(shop=shop, is_available=True).order_by('id')
@@ -196,13 +211,13 @@ def seller_store(request, shop_slug):
     page = request.GET.get('page')
     paged_products = paginator.get_page(page)
 
-    available_sizes = Variation.objects.filter(
-        variation_category='size', is_active=True, product__shop=shop
-    ).values_list('variation_value', flat=True).distinct()
+    available_sizes = ProductVariant.objects.filter(
+        is_active=True, product__shop=shop
+    ).exclude(size='').values_list('size', flat=True).distinct()
 
-    available_colors = Variation.objects.filter(
-        variation_category='color', is_active=True, product__shop=shop
-    ).values_list('variation_value', flat=True).distinct()
+    available_colors = ProductVariant.objects.filter(
+        is_active=True, product__shop=shop
+    ).exclude(color='').values_list('color', flat=True).distinct()
 
     context = {
         'shop': shop,

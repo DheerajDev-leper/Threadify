@@ -84,53 +84,53 @@
         <form action="{% url 'add_cart' single_product.id %}" method="POST" id="addCartForm">
           {% csrf_token %}
 
-          <!-- Hidden selects still submitted with the form -->
-          <input type="hidden" name="color" id="colorInput" value="">
-          <input type="hidden" name="size"  id="sizeInput"  value="">
+          {% if single_product.has_variants %}
+          <input type="hidden" name="variant_id" id="variantIdInput" value="">
 
           <!-- Colour swatches -->
+          {% if colors %}
           <div class="variant-group">
             <div class="variant-label">
               Colour
               <span class="variant-selected-val" id="colorLabel">— select</span>
             </div>
             <div class="color-swatches" id="colorSwatches">
-              {% for variation in single_product.variation_set.colors %}
+              {% for c in colors %}
               <div class="color-swatch"
-                   title="{{ variation.variation_value }}"
-                   style="background:{{ variation.variation_value|lower }};"
-                   data-value="{{ variation.variation_value }}"
-                   data-price="{{ variation.price|default:single_product.price }}"
+                   title="{{ c }}"
+                   data-color="{{ c }}"
+                   data-value="{{ c }}"
                    onclick="selectColor(this)">
               </div>
               {% endfor %}
             </div>
           </div>
+          {% endif %}
 
           <!-- Size pills -->
+          {% if sizes %}
           <div class="variant-group">
             <div class="variant-label">
               Size
               <span class="variant-selected-val" id="sizeLabel">— select</span>
             </div>
             <div class="size-pills" id="sizePills">
-              {% for variation in single_product.variation_set.sizes %}
-              <div class="size-pill"
-                   data-value="{{ variation.variation_value }}"
-                   data-price="{{ variation.price|default:single_product.price }}"
-                   onclick="selectSize(this)">
-                {{ variation.variation_value }}
-              </div>
+              {% for s in sizes %}
+              <div class="size-pill" data-value="{{ s }}" onclick="selectSize(this)">{{ s }}</div>
               {% endfor %}
             </div>
           </div>
+          {% endif %}
 
-          {% if single_product.stock <= 0 %}
+          <div class="variant-stock-notice" id="variantStockNotice" style="display:none;"></div>
+          {% endif %}
+
+          {% if single_product.stock <= 0 and not single_product.has_variants %}
           <div class="out-of-stock-notice">
             <i class="fa fa-times-circle mr-2"></i>Currently Unavailable
           </div>
           {% else %}
-          <button type="submit" class="btn btn-primary add-cart-btn">
+          <button type="submit" class="btn btn-primary add-cart-btn" id="addCartBtn">
             Add to Selection &nbsp;<i class="fa fa-shopping-bag"></i>
           </button>
           {% endif %}
@@ -272,7 +272,7 @@
 <script src="{% static 'js/product_detail.js' %}" type="text/javascript"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  initializeProductDetail({{ single_product.price }});
+  initializeProductDetail({{ single_product.price }}, {{ variants_json|safe }});
 });
 </script>
 

@@ -15,10 +15,12 @@ urlpatterns = [
     path('products/add/',                   views.product_add,          name='admin_product_add'),
     path('products/<int:pk>/edit/',         views.product_edit,         name='admin_product_edit'),
     path('products/<int:pk>/delete/',       views.product_delete,       name='admin_product_delete'),
+    
 
-    # ── Variations ───────────────────────────────────────────────────
-    path('products/<int:product_pk>/variations/add/',   views.variation_add,    name='admin_variation_add'),
-    path('variations/<int:pk>/delete/',                 views.variation_delete, name='admin_variation_delete'),
+    # ── Variants ─────────────────────────────────────────────────────
+    path('products/<int:product_pk>/variants/add/',     views.variant_add,    name='admin_variant_add'),
+    path('variants/<int:pk>/edit/',                      views.variant_edit,   name='admin_variant_edit'),
+    path('variants/<int:pk>/delete/',                    views.variant_delete, name='admin_variant_delete'),
 
     # ── Categories (super admin only) ────────────────────────────────
     path('categories/',                     views.category_list,        name='admin_category_list'),

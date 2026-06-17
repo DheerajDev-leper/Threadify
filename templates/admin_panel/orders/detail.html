@@ -18,7 +18,7 @@
       </div>
       <table class="table">
         <thead>
-          <tr><th>Product</th><th>Variations</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
+          <tr><th>Product</th><th>Variant</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
         </thead>
         <tbody>
           {% for item in order_products %}
@@ -32,9 +32,7 @@
               </div>
             </td>
             <td class="text-muted">
-              {% for v in item.variations.all %}
-              <span class="variation-tag">{{ v.variation_category|title }}: {{ v.variation_value }}</span>
-              {% endfor %}
+              {% if item.variant %}<span class="variation-tag">{{ item.variant.display_label }}</span>{% endif %}
             </td>
             <td>{{ item.quantity }}</td>
             <td>₹{{ item.product_price }}</td>

@@ -74,11 +74,9 @@
             <tr>
               <td>
                 <strong style="font-family:var(--font-display);font-weight:400;font-size:1rem;color:var(--text-dark);">{{ item.product.product_name }}</strong>
-                {% if item.variation.all %}
+                {% if item.variant %}
                 <div style="margin-top:4px;">
-                  {% for variation in item.variation.all %}
-                  <span style="font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--border-light);padding:0.15rem 0.45rem;margin-right:3px;">{{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}</span>
-                  {% endfor %}
+                  <span style="font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--border-light);padding:0.15rem 0.45rem;margin-right:3px;">{{ item.variant.display_label }}</span>
                 </div>
                 {% endif %}
               </td>

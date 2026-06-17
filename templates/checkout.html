@@ -89,10 +89,8 @@
             <img src="{{ item.product.Image.url }}" alt="{{ item.product.product_name }}">
             <div style="flex:1;min-width:0;">
               <div class="order-item-name">{{ item.product.product_name }}</div>
-              {% if item.variation.all %}
-              <div class="order-item-var">
-                {% for variation in item.variation.all %}{{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}{% if not forloop.last %} · {% endif %}{% endfor %}
-              </div>
+              {% if item.variant %}
+              <div class="order-item-var">{{ item.variant.display_label }}</div>
               {% endif %}
               <div style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:4px;letter-spacing:0.12em;">Qty: {{ item.quantity }}</div>
             </div>

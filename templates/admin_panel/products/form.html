@@ -65,58 +65,78 @@
       </form>
     </div>
 
-    <!-- Variations (edit only) -->
+    <!-- Variants (edit only) -->
     {% if action == 'Edit' %}
     <div class="card" style="margin-top:16px">
       <div class="card-header">
-        <h3 class="card-title">Variations</h3>
-        <button class="btn btn-primary btn-sm" onclick="toggleVariationForm()">+ Add Variation</button>
+        <h3 class="card-title">Variants</h3>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openVariantForm()">+ Add Variant</button>
       </div>
 
-      <!-- Add variation inline form -->
-      <div id="variationForm" class="variation-form hidden">
-        <form method="post" action="{% url 'admin_variation_add' product.pk %}">
+      <!-- Add / edit variant inline form (shared between both actions) -->
+      <div id="variantForm" class="variation-form hidden">
+        <form method="post" id="variantFormEl" action="{% url 'admin_variant_add' product.pk %}">
           {% csrf_token %}
           <div class="form-grid-3">
             <div class="form-group">
-              <label class="form-label">Category</label>
-              <select name="variation_category" class="form-select">
-                <option value="color">Color</option>
-                <option value="size">Size</option>
-              </select>
+              <label class="form-label">Colour</label>
+              <input type="text" name="color" id="variantColorField" class="form-input" placeholder="e.g. Red" />
             </div>
             <div class="form-group">
-              <label class="form-label">Value</label>
-              <input type="text" name="variation_value" class="form-input" placeholder="e.g. Red, XL" />
+              <label class="form-label">Size</label>
+              <input type="text" name="size" id="variantSizeField" class="form-input" placeholder="e.g. XL" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">SKU</label>
+              <input type="text" name="sku" id="variantSkuField" class="form-input" placeholder="Optional" />
+            </div>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Stock <span class="required">*</span></label>
+              <input type="number" name="stock" id="variantStockField" value="0" required min="0" class="form-input" />
             </div>
             <div class="form-group">
               <label class="form-label">Price Override (₹)</label>
-              <input type="number" name="price" class="form-input" placeholder="Leave blank for default" step="0.01" min="0" />
+              <input type="number" name="price" id="variantPriceField" class="form-input" placeholder="Leave blank for default" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label form-label-inline" style="margin-top:1.7rem;">
+                <input type="checkbox" name="is_active" id="variantActiveField" class="form-checkbox" checked />
+                Active
+              </label>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label form-label-inline">
-              <input type="checkbox" name="is_active" class="form-checkbox" checked />
-              Active
-            </label>
-          </div>
+          <p class="text-muted" style="font-size:0.78rem;margin:-0.3rem 0 0.8rem;">
+            Leave Colour or Size blank if this product doesn't vary along that dimension — fill in both for combinations like "Red, XL".
+          </p>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-sm">Save Variation</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="toggleVariationForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="variantSubmitBtn">Save Variant</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="closeVariantForm()">Cancel</button>
           </div>
         </form>
       </div>
 
       <table class="table">
         <thead>
-          <tr><th>Category</th><th>Value</th><th>Price</th><th>Active</th><th></th></tr>
+          <tr><th>Colour</th><th>Size</th><th>SKU</th><th>Price</th><th>Stock</th><th>Active</th><th></th></tr>
         </thead>
         <tbody>
-          {% for v in variations %}
+          {% for v in variants %}
           <tr>
-            <td>{{ v.variation_category|title }}</td>
-            <td>{{ v.variation_value }}</td>
+            <td>{{ v.color|default:"—" }}</td>
+            <td>{{ v.size|default:"—" }}</td>
+            <td>{{ v.sku|default:"—" }}</td>
             <td>{% if v.price %}₹{{ v.price }}{% else %}<span class="text-muted">Default</span>{% endif %}</td>
+            <td>
+              {% if v.stock <= 0 %}
+              <span class="badge badge-red">0</span>
+              {% elif v.stock <= 5 %}
+              <span class="badge badge-orange">{{ v.stock }}</span>
+              {% else %}
+              {{ v.stock }}
+              {% endif %}
+            </td>
             <td>
               {% if v.is_active %}
               <span class="status-dot status-dot-green">Yes</span>
@@ -125,12 +145,16 @@
               {% endif %}
             </td>
             <td>
-              <a href="{% url 'admin_variation_delete' v.pk %}" class="table-action table-action-danger"
-                 onclick="return confirm('Delete this variation?')">Delete</a>
+              <div class="action-group">
+                <a href="javascript:void(0)" class="table-action"
+                   onclick="editVariant('{{ v.pk }}', '{{ v.color|escapejs }}', '{{ v.size|escapejs }}', '{{ v.sku|escapejs }}', '{{ v.stock }}', '{{ v.price|default_if_none:"" }}', {% if v.is_active %}true{% else %}false{% endif %})">Edit</a>
+                <a href="{% url 'admin_variant_delete' v.pk %}" class="table-action table-action-danger"
+                   onclick="return confirm('Delete this variant?')">Delete</a>
+              </div>
             </td>
           </tr>
           {% empty %}
-          <tr><td colspan="5" class="empty-row">No variations yet.</td></tr>
+          <tr><td colspan="7" class="empty-row">No variants yet.</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -188,8 +212,31 @@ function previewImage(input) {
   }
 }
 
-function toggleVariationForm() {
-  document.getElementById('variationForm').classList.toggle('hidden');
+function openVariantForm() {
+  document.getElementById('variantForm').classList.remove('hidden');
+}
+
+function closeVariantForm() {
+  document.getElementById('variantForm').classList.add('hidden');
+  resetVariantForm();
+}
+
+function resetVariantForm() {
+  document.getElementById('variantFormEl').reset();
+  document.getElementById('variantFormEl').action = "{% if product %}{% url 'admin_variant_add' product.pk %}{% endif %}";
+  document.getElementById('variantSubmitBtn').textContent = 'Save Variant';
+}
+
+function editVariant(pk, color, size, sku, stock, price, isActive) {
+  document.getElementById('variantColorField').value = color;
+  document.getElementById('variantSizeField').value = size;
+  document.getElementById('variantSkuField').value = sku;
+  document.getElementById('variantStockField').value = stock;
+  document.getElementById('variantPriceField').value = price;
+  document.getElementById('variantActiveField').checked = isActive;
+  document.getElementById('variantFormEl').action = "{% url 'admin_variant_edit' 999999 %}".replace('999999', pk);
+  document.getElementById('variantSubmitBtn').textContent = 'Update Variant';
+  openVariantForm();
 }
 </script>
 {% endblock %}

@@ -1,20 +1,41 @@
 var basePrice = 0;
+var productVariants = [];
+var hasColors = false;
+var hasSizes = false;
+var selectedColor = null;
+var selectedSize = null;
 
-function initializeProductDetail(productPrice) {
+function initializeProductDetail(productPrice, variants) {
   basePrice = productPrice;
+  productVariants = variants || [];
+  hasColors = productVariants.some(function (v) { return v.color; });
+  hasSizes  = productVariants.some(function (v) { return v.size; });
+
   initThumbnailSwitcher();
-  initColorSwatches();
-  initSizePills();
   initFormValidation();
+
+  if (productVariants.length) {
+    if (!hasColors && !hasSizes) {
+      // A single "default" variant with no colour/size axes — auto-select it
+      // so the cart still records which combination (and therefore which
+      // stock count) the shopper is buying.
+      var input = document.getElementById('variantIdInput');
+      if (input) input.value = productVariants[0].id;
+    } else {
+      applyAvailability();
+      updateSelection();
+    }
+  }
 }
 
 function initThumbnailSwitcher() {
-  document.querySelectorAll('.thumb-link').forEach(function(link) {
-    link.addEventListener('click', function(e) {
+  document.querySelectorAll('.thumb-link').forEach(function (link) {
+    link.addEventListener('click', function (e) {
       e.preventDefault();
       var src = this.getAttribute('href');
-      document.getElementById('mainImg').src = src;
-      document.querySelectorAll('.gallery-thumbs img').forEach(function(img){
+      var mainImg = document.getElementById('mainImg');
+      if (mainImg) mainImg.src = src;
+      document.querySelectorAll('.gallery-thumbs img').forEach(function (img) {
         img.classList.remove('active');
       });
       this.querySelector('img').classList.add('active');
@@ -22,70 +43,138 @@ function initThumbnailSwitcher() {
   });
 }
 
+function findVariant(color, size) {
+  return productVariants.find(function (v) {
+    return (v.color || '') === (color || '') && (v.size || '') === (size || '');
+  });
+}
+
 function selectColor(el) {
-  document.querySelectorAll('.color-swatch').forEach(function(s){ s.classList.remove('active'); });
+  if (el.classList.contains('unavailable')) return;
+  document.querySelectorAll('.color-swatch').forEach(function (s) { s.classList.remove('active'); });
   el.classList.add('active');
-  document.getElementById('colorInput').value = el.dataset.value;
-  document.getElementById('colorLabel').textContent = el.dataset.value;
-  updatePrice();
+  selectedColor = el.dataset.value;
+  var colorLabel = document.getElementById('colorLabel');
+  if (colorLabel) colorLabel.textContent = selectedColor;
+  applyAvailability();
+  updateSelection();
 }
 
 function selectSize(el) {
   if (el.classList.contains('unavailable')) return;
-  document.querySelectorAll('.size-pill').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.size-pill').forEach(function (s) { s.classList.remove('active'); });
   el.classList.add('active');
-  document.getElementById('sizeInput').value = el.dataset.value;
-  document.getElementById('sizeLabel').textContent = el.dataset.value;
-  updatePrice();
+  selectedSize = el.dataset.value;
+  var sizeLabel = document.getElementById('sizeLabel');
+  if (sizeLabel) sizeLabel.textContent = selectedSize;
+  applyAvailability();
+  updateSelection();
 }
 
-function updatePrice() {
-  var colorEl = document.querySelector('.color-swatch.active');
-  var sizeEl  = document.querySelector('.size-pill.active');
-  var price   = basePrice;
+// Cross-disable: once one axis is picked, grey out options on the other
+// axis that don't form an in-stock combination — the same behaviour as
+// picking a colour on a marketplace listing and watching sizes update.
+function applyAvailability() {
+  if (hasSizes) {
+    document.querySelectorAll('.size-pill').forEach(function (pill) {
+      pill.classList.toggle('unavailable', !sizeIsAvailable(pill.dataset.value));
+    });
+  }
+  if (hasColors) {
+    document.querySelectorAll('.color-swatch').forEach(function (swatch) {
+      swatch.classList.toggle('unavailable', !colorIsAvailable(swatch.dataset.value));
+    });
+  }
+}
 
-  if (colorEl && parseFloat(colorEl.dataset.price) > 0) {
-    price = parseFloat(colorEl.dataset.price);
+function sizeIsAvailable(size) {
+  if (hasColors && selectedColor) {
+    var v = findVariant(selectedColor, size);
+    return !!(v && v.stock > 0);
   }
-  if (sizeEl && parseFloat(sizeEl.dataset.price) > 0) {
-    price = parseFloat(sizeEl.dataset.price);
+  return productVariants.some(function (v) { return (v.size || '') === size && v.stock > 0; });
+}
+
+function colorIsAvailable(color) {
+  if (hasSizes && selectedSize) {
+    var v = findVariant(color, selectedSize);
+    return !!(v && v.stock > 0);
   }
+  return productVariants.some(function (v) { return (v.color || '') === color && v.stock > 0; });
+}
+
+function updateSelection() {
+  var ready = (!hasColors || selectedColor) && (!hasSizes || selectedSize);
+  var variant = ready ? findVariant(selectedColor, selectedSize) : null;
 
   var priceEl = document.getElementById('productPrice');
-  priceEl.textContent = 'Rs' + price.toFixed(2);
-  priceEl.classList.remove('price-changed');
-  void priceEl.offsetWidth;
-  priceEl.classList.add('price-changed');
+  var notice  = document.getElementById('variantStockNotice');
+  var input   = document.getElementById('variantIdInput');
+
+  if (variant) {
+    if (input)   input.value = variant.id;
+    if (priceEl) priceEl.textContent = 'Rs' + variant.price.toFixed(2);
+    if (notice) {
+      if (variant.stock <= 0) {
+        notice.textContent = 'This combination is out of stock.';
+        notice.style.display = 'block';
+      } else if (variant.stock <= 5) {
+        notice.textContent = 'Only ' + variant.stock + ' left.';
+        notice.style.display = 'block';
+      } else {
+        notice.style.display = 'none';
+      }
+    }
+  } else {
+    if (input)   input.value = '';
+    if (priceEl) priceEl.textContent = 'Rs' + basePrice.toFixed(2);
+    if (notice)  notice.style.display = 'none';
+  }
+
+  if (priceEl) {
+    priceEl.classList.remove('price-changed');
+    void priceEl.offsetWidth;
+    priceEl.classList.add('price-changed');
+  }
+
+  updateAddButtonState(variant, ready);
 }
 
-function initColorSwatches() {
-  // Color swatch selection is handled by selectColor function
-}
-
-function initSizePills() {
-  // Size pill selection is handled by selectSize function
+function updateAddButtonState(variant, ready) {
+  var btn = document.getElementById('addCartBtn');
+  if (!btn) return;
+  if (!hasColors && !hasSizes) {
+    btn.disabled = false;
+    return;
+  }
+  btn.disabled = !(ready && variant && variant.stock > 0);
 }
 
 function initFormValidation() {
   var form = document.getElementById('addCartForm');
   if (!form) return;
 
-  form.addEventListener('submit', function(e) {
-    var colorPills = document.querySelectorAll('.color-swatch');
-    var sizePills  = document.querySelectorAll('.size-pill');
+  form.addEventListener('submit', function (e) {
+    if (!hasColors && !hasSizes) return;
 
-    if (colorPills.length > 0 && !document.getElementById('colorInput').value) {
+    if (hasColors && !selectedColor) {
       e.preventDefault();
       alert('Please select a colour.');
       return;
     }
-    if (sizePills.length > 0 && !document.getElementById('sizeInput').value) {
+    if (hasSizes && !selectedSize) {
       e.preventDefault();
       alert('Please select a size.');
       return;
     }
+    var variant = findVariant(selectedColor, selectedSize);
+    if (!variant || variant.stock <= 0) {
+      e.preventDefault();
+      alert('That combination is out of stock.');
+    }
   });
 }
+
 const colorMap = {
   'black':      '#1a1a1a',
   'white':      '#f5f5f5',
@@ -109,24 +198,9 @@ const colorMap = {
   'olive':      '#6b7a2a',
 };
 
-function selectColor(el) {
-// Apply color backgrounds from map
-  document.querySelectorAll('.color-swatch[data-color]').forEach(function(swatch) {
-    const key = swatch.dataset.color.trim().toLowerCase();
-    const hex = colorMap[key];
-    if (hex) {
-      swatch.style.background = hex;
-    } else {
-      // fallback: try using the value directly as CSS color
-      swatch.style.background = key;
-    }
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.color-swatch[data-color]').forEach(function (swatch) {
+    var key = swatch.dataset.color.trim().toLowerCase();
+    swatch.style.background = colorMap[key] || key;
   });
-  el.classList.add('active');
-  const val = el.dataset.value;
-  document.getElementById('colorInput').value = val;
-  // Show selected color name in label
-  document.getElementById('colorLabel').textContent = val.charAt(0).toUpperCase() + val.slice(1);
-  // Update price if variant has its own price
-  const price = el.dataset.price;
-  if (price) updatePrice(price);
-}
+});

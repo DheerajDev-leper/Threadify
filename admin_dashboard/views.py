@@ -2,13 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib import messages
+from django.db import IntegrityError
 from django.db.models import Sum, Count, Avg, Q
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
 import json
 
-from store.models import Product, Variation, ReviewRating, ProductGallery
+from store.models import Product, ProductVariant, ReviewRating, ProductGallery
 from store.models import Shop          # ← your new Shop model
 from category.models import Category
 from accounts.models import Account, UserProfile
@@ -354,7 +355,7 @@ def product_edit(request, pk):
         return redirect('admin_product_list')
 
     categories = Category.objects.all()
-    variations = Variation.objects.filter(product=product)
+    variants = ProductVariant.objects.filter(product=product)
 
     if request.method == 'POST':
         product.product_name = request.POST.get('product_name')
@@ -373,7 +374,7 @@ def product_edit(request, pk):
     return render(request, 'admin_panel/products/form.html', {
         'product'    : product,
         'categories' : categories,
-        'variations' : variations,
+        'variants'   : variants,
         'action'     : 'Edit',
         'is_super'   : request.user.is_super_admin,
     })
@@ -396,37 +397,64 @@ def product_delete(request, pk):
     })
 
 
-# ─── Variations ───────────────────────────────────────────────────────────────
+# ─── Variants ─────────────────────────────────────────────────────────────────
 
 @login_required(login_url='admin_login')
 @user_passes_test(is_any_admin, login_url='admin_login')
-def variation_add(request, product_pk):
+def variant_add(request, product_pk):
     product = get_object_or_404(Product, pk=product_pk)
     if not request.user.is_super_admin and product.shop != request.user.shop:
         messages.error(request, 'Permission denied.')
         return redirect('admin_product_list')
     if request.method == 'POST':
-        Variation.objects.create(
-            product            = product,
-            variation_category = request.POST.get('variation_category'),
-            variation_value    = request.POST.get('variation_value'),
-            price              = request.POST.get('price') or None,
-            is_active          = request.POST.get('is_active') == 'on',
-        )
-        messages.success(request, 'Variation added.')
+        try:
+            ProductVariant.objects.create(
+                product   = product,
+                color     = request.POST.get('color', '').strip(),
+                size      = request.POST.get('size', '').strip(),
+                sku       = request.POST.get('sku', '').strip(),
+                stock     = request.POST.get('stock') or 0,
+                price     = request.POST.get('price') or None,
+                is_active = request.POST.get('is_active') == 'on',
+            )
+            messages.success(request, 'Variant added.')
+        except IntegrityError:
+            messages.error(request, 'A variant with that colour/size combination already exists.')
     return redirect('admin_product_edit', pk=product_pk)
 
 
 @login_required(login_url='admin_login')
 @user_passes_test(is_any_admin, login_url='admin_login')
-def variation_delete(request, pk):
-    variation  = get_object_or_404(Variation, pk=pk)
-    product_pk = variation.product.pk
-    if not request.user.is_super_admin and variation.product.shop != request.user.shop:
+def variant_edit(request, pk):
+    variant = get_object_or_404(ProductVariant, pk=pk)
+    if not request.user.is_super_admin and variant.product.shop != request.user.shop:
         messages.error(request, 'Permission denied.')
         return redirect('admin_product_list')
-    variation.delete()
-    messages.success(request, 'Variation deleted.')
+    if request.method == 'POST':
+        variant.color     = request.POST.get('color', '').strip()
+        variant.size      = request.POST.get('size', '').strip()
+        variant.sku       = request.POST.get('sku', '').strip()
+        variant.stock     = request.POST.get('stock') or 0
+        variant.price     = request.POST.get('price') or None
+        variant.is_active = request.POST.get('is_active') == 'on'
+        try:
+            variant.save()
+            messages.success(request, 'Variant updated.')
+        except IntegrityError:
+            messages.error(request, 'A variant with that colour/size combination already exists.')
+    return redirect('admin_product_edit', pk=variant.product.pk)
+
+
+@login_required(login_url='admin_login')
+@user_passes_test(is_any_admin, login_url='admin_login')
+def variant_delete(request, pk):
+    variant    = get_object_or_404(ProductVariant, pk=pk)
+    product_pk = variant.product.pk
+    if not request.user.is_super_admin and variant.product.shop != request.user.shop:
+        messages.error(request, 'Permission denied.')
+        return redirect('admin_product_list')
+    variant.delete()
+    messages.success(request, 'Variant deleted.')
     return redirect('admin_product_edit', pk=product_pk)
 
 
@@ -760,3 +788,5 @@ def review_delete(request, pk):
     return render(request, 'admin_panel/products/confirm_delete.html', {
         'object': review, 'type': 'Review'
     })
+
+

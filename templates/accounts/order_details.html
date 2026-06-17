@@ -59,10 +59,8 @@
                                             <tr>
                                                 <td>{{ item.product.product_name}}
                                                     <p class="text-muted small">
-                                                        {% if item.variation.all %}
-                                                            {% for variation in item.variation.all %}
-                                                                {{ variation.variation_category | capfirst }} : {{ variation.variation_value | capfirst }} <br>
-                                                            {% endfor %}
+                                                        {% if item.variant %}
+                                                            {{ item.variant.display_label }}
                                                         {% endif %}
                                                     </p>
                                                 </td>
