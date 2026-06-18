@@ -3,8 +3,11 @@ from . import views
 
 urlpatterns = [
     # ── Auth ─────────────────────────────────────────────────────────
-    path('login/',                          views.admin_login,          name='admin_login'),
-    path('register/',                       views.shop_register,        name='shop_register'),
+    path('login/',                          views.admin_login,             name='admin_login'),
+    path('logout/',                         views.admin_logout,            name='admin_logout'),
+    path('register/',                       views.shop_register,           name='shop_register'),
+    path('forgot-password/',                views.admin_forgot_password,   name='admin_forgot_password'),
+    path('reset/<uidb64>/<token>/',         views.admin_reset_password,    name='admin_reset_password'),
 
     # ── Dashboard ────────────────────────────────────────────────────
     path('',                                views.admin_dashboard,      name='admin_dashboard'),
@@ -21,6 +24,10 @@ urlpatterns = [
     path('products/<int:product_pk>/variants/add/',     views.variant_add,    name='admin_variant_add'),
     path('variants/<int:pk>/edit/',                      views.variant_edit,   name='admin_variant_edit'),
     path('variants/<int:pk>/delete/',                    views.variant_delete, name='admin_variant_delete'),
+
+    # ── Gallery ──────────────────────────────────────────────────────
+    path('products/<int:product_pk>/gallery/add/',      views.gallery_add,    name='admin_gallery_add'),
+    path('gallery/<int:pk>/delete/',                    views.gallery_delete, name='admin_gallery_delete'),
 
     # ── Categories (super admin only) ────────────────────────────────
     path('categories/',                     views.category_list,        name='admin_category_list'),

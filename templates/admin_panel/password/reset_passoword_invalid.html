@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link Expired — StyleAdmin</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    a { color: inherit; text-decoration: none; }
+    svg { display: block; flex-shrink: 0; }
+
+    :root {
+      --bg: #080a0f; --surface: #111318; --surface-2: #181c25;
+      --border: rgba(255,255,255,0.06); --border-2: rgba(255,255,255,0.10);
+      --text: #edf0f7; --text-dim: #8b95a8; --text-muted: #4e5668;
+      --purple: #7c5cfc; --purple-light: #9d80ff; --purple-dim: rgba(124,92,252,0.12);
+      --red: #ef4444; --red-dim: rgba(239,68,68,0.12);
+      --radius-sm: 7px; --radius: 10px; --transition: 0.18s ease;
+    }
+
+    html { font-size: 15px; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 32px 20px; -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      width: 100%; max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border-2); border-radius: 16px;
+      padding: 48px 40px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .brand-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: var(--purple-dim); border: 1px solid rgba(124,92,252,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: var(--purple-light);
+    }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 15px; letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #fff 0%, var(--purple-light) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .icon-wrap {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--red-dim); border: 1px solid rgba(239,68,68,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--red); margin-bottom: 24px;
+      box-shadow: 0 0 32px rgba(239,68,68,0.12);
+    }
+
+    .title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 22px; letter-spacing: -0.5px;
+      color: var(--text); margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 13.5px; color: var(--text-dim); line-height: 1.6; margin-bottom: 32px;
+    }
+
+    .btn {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 11px 20px;
+      background: var(--purple); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124,92,252,0.35);
+      transition: all var(--transition); margin-bottom: 12px;
+    }
+
+    .btn:hover {
+      background: var(--purple-light);
+      box-shadow: 0 6px 28px rgba(124,92,252,0.5);
+      transform: translateY(-1px);
+    }
+
+    .back-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 13px; color: var(--text-muted);
+      transition: color var(--transition);
+    }
+
+    .back-link:hover { color: var(--text); }
+
+    .footer { margin-top: 28px; font-size: 11px; color: var(--text-muted); opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <div class="brand">
+      <div class="brand-icon">✦</div>
+      <span class="brand-name">StyleAdmin</span>
+    </div>
+
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+
+    <h1 class="title">Link expired</h1>
+    <p class="subtitle">
+      This password reset link is invalid or has expired.<br/>
+      Reset links are valid for <strong>1 hour</strong> and can only be used once.
+    </p>
+
+    <a href="{% url 'admin_forgot_password' %}" class="btn">Request a new link</a>
+
+    <a href="{% url 'admin_login' %}" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to sign in
+    </a>
+
+    <p class="footer">✦ StyleAdmin &nbsp;·&nbsp; v2.0</p>
+
+  </div>
+</body>
+</html>

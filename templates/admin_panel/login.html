@@ -38,7 +38,6 @@
       --transition:      0.18s ease;
     }
 
-    /* ── Base ────────────────────────────────────────────── */
     html { font-size: 15px; height: 100%; }
 
     body {
@@ -51,9 +50,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ════════════════════════════════════════════════════
-       LEFT PANEL — decorative / brand
-       ════════════════════════════════════════════════════ */
     .login-left {
       position: relative;
       display: flex;
@@ -65,7 +61,6 @@
       border-right: 1px solid var(--border);
     }
 
-    /* Animated grid background */
     .login-left::before {
       content: '';
       position: absolute;
@@ -78,7 +73,6 @@
       -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
     }
 
-    /* Purple glow orb */
     .login-left::after {
       content: '';
       position: absolute;
@@ -122,7 +116,6 @@
       background-clip: text;
     }
 
-    /* Centre showcase */
     .left-showcase {
       position: relative;
       z-index: 1;
@@ -159,7 +152,6 @@
       background-clip: text;
     }
 
-    /* Metric chips */
     .left-metrics {
       display: flex;
       gap: 10px;
@@ -194,7 +186,6 @@
       letter-spacing: 0.03em;
     }
 
-    /* Floating activity cards */
     .left-activity {
       display: flex;
       flex-direction: column;
@@ -250,7 +241,6 @@
       flex-shrink: 0;
     }
 
-    /* Bottom tagline */
     .left-footer {
       position: relative;
       z-index: 1;
@@ -259,9 +249,7 @@
       line-height: 1.6;
     }
 
-    /* ════════════════════════════════════════════════════
-       RIGHT PANEL — login form
-       ════════════════════════════════════════════════════ */
+    /* ── Right panel ── */
     .login-right {
       display: flex;
       flex-direction: column;
@@ -279,10 +267,7 @@
       gap: 0;
     }
 
-    /* Header */
-    .login-header {
-      margin-bottom: 32px;
-    }
+    .login-header { margin-bottom: 32px; }
 
     .login-title {
       font-family: 'Syne', sans-serif;
@@ -299,7 +284,6 @@
       line-height: 1.5;
     }
 
-    /* Messages */
     .login-messages {
       display: flex;
       flex-direction: column;
@@ -331,7 +315,6 @@
 
     .login-alert svg { flex-shrink: 0; }
 
-    /* Form */
     .login-form { display: flex; flex-direction: column; gap: 16px; }
 
     .field-group { display: flex; flex-direction: column; gap: 6px; }
@@ -385,10 +368,8 @@
       background: var(--surface-3);
     }
 
-    .field-input:focus + .field-icon,
     .field-wrap:focus-within .field-icon { color: var(--purple-light); }
 
-    /* Password toggle */
     .field-toggle {
       position: absolute;
       right: 10px;
@@ -404,7 +385,6 @@
 
     .field-toggle:hover { color: var(--text); }
 
-    /* Remember + forgot row */
     .form-row {
       display: flex;
       align-items: center;
@@ -438,7 +418,6 @@
 
     .forgot-link:hover { opacity: 1; }
 
-    /* Submit button */
     .login-btn {
       width: 100%;
       display: flex;
@@ -461,7 +440,6 @@
       margin-top: 6px;
     }
 
-    /* shimmer sweep on hover */
     .login-btn::before {
       content: '';
       position: absolute;
@@ -478,7 +456,6 @@
     }
 
     .login-btn:hover::before { transform: translateX(100%); }
-
     .login-btn:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(124,92,252,0.3); }
 
     .login-btn-spinner {
@@ -495,12 +472,12 @@
     .login-btn.loading .login-btn-text { display: none; }
     .login-btn.loading .login-btn-spinner { display: block; }
 
-    /* Divider */
+    /* ── Divider ── */
     .login-divider {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-top: 6px;
+      margin-top: 16px;
     }
 
     .login-divider-line {
@@ -515,9 +492,37 @@
       white-space: nowrap;
     }
 
-    /* Footer */
+    /* ── Register CTA ── */
+    .register-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+
+    .register-btn:hover {
+      border-color: rgba(124,92,252,0.4);
+      color: var(--text);
+      background: var(--purple-dim);
+    }
+
+    .register-btn svg { color: var(--purple-light); }
+
+    /* ── Footer ── */
     .login-footer {
-      margin-top: 28px;
+      margin-top: 24px;
       text-align: center;
       font-size: 12px;
       color: var(--text-muted);
@@ -539,16 +544,10 @@
       font-weight: 500;
     }
 
-    /* ════════════════════════════════════════════════════
-       SCROLLBAR
-       ════════════════════════════════════════════════════ */
     ::-webkit-scrollbar              { width: 5px; }
     ::-webkit-scrollbar-track        { background: transparent; }
     ::-webkit-scrollbar-thumb        { background: var(--surface-3); border-radius: 99px; }
 
-    /* ════════════════════════════════════════════════════
-       RESPONSIVE
-       ════════════════════════════════════════════════════ */
     @media (max-width: 900px) {
       body { grid-template-columns: 1fr; }
       .login-left { display: none; }
@@ -562,20 +561,24 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
+
+    .field-error-msg {
+      font-size: 11.5px;
+      color: #f87171;
+      margin-top: 2px;
+      display: block;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ── Left panel ───────────────────────────────────── -->
+  <!-- ── Left panel ── -->
   <div class="login-left">
-
-    <!-- Brand -->
     <div class="left-brand">
       <div class="left-brand-icon">✦</div>
       <span class="left-brand-name">StyleAdmin</span>
     </div>
 
-    <!-- Showcase -->
     <div class="left-showcase">
       <span class="left-eyebrow">Command Centre</span>
       <h1 class="left-headline">
@@ -583,7 +586,6 @@
         <em>exactly where it should be.</em>
       </h1>
 
-      <!-- Metrics -->
       <div class="left-metrics">
         <div class="metric-chip">
           <span class="metric-chip-value">₹2.4L</span>
@@ -599,7 +601,6 @@
         </div>
       </div>
 
-      <!-- Live activity feed -->
       <div class="left-activity">
         <div class="activity-item">
           <span class="activity-dot activity-dot-green"></span>
@@ -619,24 +620,21 @@
       </div>
     </div>
 
-    <!-- Footer -->
     <p class="left-footer">
       Secured with end-to-end session encryption.<br/>
       Only authorised administrators may access this panel.
     </p>
   </div>
 
-  <!-- ── Right panel ──────────────────────────────────── -->
+  <!-- ── Right panel ── -->
   <div class="login-right">
     <div class="login-card">
 
-      <!-- Header -->
       <div class="login-header">
         <h2 class="login-title">Welcome back</h2>
         <p class="login-subtitle">Sign in to your admin account to continue.</p>
       </div>
 
-      <!-- Django messages -->
       {% if messages %}
       <div class="login-messages">
         {% for message in messages %}
@@ -652,7 +650,6 @@
       </div>
       {% endif %}
 
-      <!-- Non-field form errors -->
       {% if form.non_field_errors %}
       <div class="login-messages">
         {% for error in form.non_field_errors %}
@@ -664,11 +661,10 @@
       </div>
       {% endif %}
 
-      <!-- Form -->
+      <!-- Sign in form -->
       <form method="post" class="login-form" id="loginForm" novalidate>
         {% csrf_token %}
 
-        <!-- Email -->
         <div class="field-group">
           <label class="field-label" for="id_email">Email address</label>
           <div class="field-wrap">
@@ -676,24 +672,17 @@
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
               <polyline points="22,6 12,13 2,6"/>
             </svg>
-            <input
-              type="email"
-              name="email"
-              id="id_email"
-              class="field-input {% if form.email.errors %}field-error{% endif %}"
-              placeholder="you@example.com"
-              value="{{ form.email.value|default:'' }}"
-              autocomplete="email"
-              autofocus
-              required
-            />
+            <input type="email" name="email" id="id_email"
+                   class="field-input {% if form.email.errors %}field-error{% endif %}"
+                   placeholder="you@example.com"
+                   value="{{ form.email.value|default:'' }}"
+                   autocomplete="email" autofocus required />
           </div>
           {% if form.email.errors %}
           <span class="field-error-msg">{{ form.email.errors.0 }}</span>
           {% endif %}
         </div>
 
-        <!-- Password -->
         <div class="field-group">
           <label class="field-label" for="id_password">Password</label>
           <div class="field-wrap">
@@ -701,24 +690,18 @@
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
-            <input
-              type="password"
-              name="password"
-              id="id_password"
-              class="field-input {% if form.password.errors %}field-error{% endif %}"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              required
-            />
+            <input type="password" name="password" id="id_password"
+                   class="field-input {% if form.password.errors %}field-error{% endif %}"
+                   placeholder="••••••••"
+                   autocomplete="current-password" required />
             <button type="button" class="field-toggle" id="togglePassword" aria-label="Show password">
-              <!-- Eye icon -->
               <svg id="eyeShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
-              <!-- Eye-off icon (hidden by default) -->
               <svg id="eyeHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15" style="display:none">
-                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
                 <line x1="1" y1="1" x2="23" y2="23"/>
               </svg>
             </button>
@@ -728,23 +711,36 @@
           {% endif %}
         </div>
 
-        <!-- Remember + Forgot -->
         <div class="form-row">
           <label class="remember-label">
             <input type="checkbox" name="remember" class="remember-checkbox" />
             Keep me signed in
           </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <a href="{% url 'admin_forgot_password' %}" class="forgot-link">Forgot password?</a>
         </div>
 
-        <!-- Submit -->
         <button type="submit" class="login-btn" id="loginBtn">
           <span class="login-btn-text">Sign in to dashboard</span>
           <div class="login-btn-spinner"></div>
         </button>
       </form>
 
-      <!-- Footer -->
+      <!-- Divider -->
+      <div class="login-divider">
+        <div class="login-divider-line"></div>
+        <span class="login-divider-text">New to StyleAdmin?</span>
+        <div class="login-divider-line"></div>
+      </div>
+
+      <!-- Register shop button -->
+      <a href="{% url 'shop_register' %}" class="register-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Register your shop
+      </a>
+
       <div class="login-footer">
         Access is restricted to authorised administrators only.
         <div class="login-footer-brand">
@@ -756,25 +752,23 @@
   </div>
 
   <script>
-    /* Password visibility toggle */
-    const toggle   = document.getElementById('togglePassword');
-    const pwField  = document.getElementById('id_password');
-    const eyeShow  = document.getElementById('eyeShow');
-    const eyeHide  = document.getElementById('eyeHide');
+    const toggle  = document.getElementById('togglePassword');
+    const pwField = document.getElementById('id_password');
+    const eyeShow = document.getElementById('eyeShow');
+    const eyeHide = document.getElementById('eyeHide');
 
     if (toggle && pwField) {
       toggle.addEventListener('click', function () {
         const isPassword = pwField.type === 'password';
-        pwField.type  = isPassword ? 'text' : 'password';
+        pwField.type = isPassword ? 'text' : 'password';
         eyeShow.style.display = isPassword ? 'none' : 'block';
         eyeHide.style.display = isPassword ? 'block' : 'none';
         toggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
       });
     }
 
-    /* Loading state on submit */
-    const form      = document.getElementById('loginForm');
-    const loginBtn  = document.getElementById('loginBtn');
+    const form     = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
 
     if (form && loginBtn) {
       form.addEventListener('submit', function () {
@@ -783,22 +777,11 @@
       });
     }
 
-    /* Field-level inline error style */
     document.querySelectorAll('.field-error').forEach(function (input) {
       input.style.borderColor = 'rgba(239,68,68,0.5)';
       input.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.1)';
     });
   </script>
-
-  <style>
-    /* Inline error message */
-    .field-error-msg {
-      font-size: 11.5px;
-      color: #f87171;
-      margin-top: 2px;
-      display: block;
-    }
-  </style>
 
 </body>
 </html>

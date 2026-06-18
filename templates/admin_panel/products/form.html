@@ -73,7 +73,6 @@
         <button type="button" class="btn btn-primary btn-sm" onclick="openVariantForm()">+ Add Variant</button>
       </div>
 
-      <!-- Add / edit variant inline form (shared between both actions) -->
       <div id="variantForm" class="variation-form hidden">
         <form method="post" id="variantFormEl" action="{% url 'admin_variant_add' product.pk %}">
           {% csrf_token %}
@@ -162,11 +161,13 @@
     {% endif %}
   </div>
 
-  <!-- Sidebar: image upload -->
+  <!-- Sidebar -->
   <div class="form-side">
+
+    <!-- Main image -->
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Product Image</h3>
+        <h3 class="card-title">Cover Image</h3>
       </div>
       <div class="image-upload-wrap" id="imageWrap">
         {% if product.Image %}
@@ -174,23 +175,88 @@
         {% else %}
         <img src="" alt="" class="image-preview hidden" id="imagePreview" />
         {% endif %}
-        <div class="image-placeholder" id="imagePlaceholder" {% if product.Image %}style="display:none"{% endif %}>
+        <div class="image-placeholder" id="imagePlaceholder"
+             {% if product.Image %}style="display:none"{% endif %}
+             onclick="document.getElementById('imageInput').click()"
+             style="{% if product.Image %}display:none;{% endif %}cursor:pointer;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           <p>Click or drag to upload</p>
           <span class="upload-hint">PNG, JPG up to 5 MB</span>
         </div>
-        <input type="file" name="Image" id="imageInput" accept="image/*" class="image-file-input"
-               form="productForm" onchange="previewImage(this)" />
+        {% if product.Image %}
+        <div style="padding:8px 16px 12px;">
+          <button type="button" class="btn btn-ghost btn-sm"
+                  onclick="document.getElementById('imageInput').click()">
+            Change Image
+          </button>
+        </div>
+        {% endif %}
+        <input type="file" name="Image" id="imageInput" accept="image/*"
+               style="display:none;" form="productForm" onchange="previewImage(this)" />
+      </div>
       </div>
     </div>
-  </div>
+
+    <!-- Gallery images (edit only) -->
+    {% if action == 'Edit' %}
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">
+        <h3 class="card-title">Gallery</h3>
+        <span class="text-muted" style="font-size:0.72rem;">Shown as thumbnails on product page</span>
+      </div>
+
+      <!-- Existing gallery images -->
+      {% if product_gallery %}
+      <div class="gallery-grid" id="galleryGrid">
+        {% for img in product_gallery %}
+        <div class="gallery-item" id="gallery-item-{{ img.pk }}">
+          <img src="{{ img.image.url }}" alt="Gallery {{ forloop.counter }}" class="gallery-thumb-img" />
+          <a href="{% url 'admin_gallery_delete' img.pk %}"
+             class="gallery-delete-btn"
+             onclick="return confirm('Remove this photo?')"
+             title="Remove">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Upload new gallery images -->
+      <form method="post" enctype="multipart/form-data"
+            action="{% url 'admin_gallery_add' product.pk %}"
+            id="galleryUploadForm">
+        {% csrf_token %}
+        <div class="gallery-upload-zone" id="galleryDropZone"
+             onclick="document.getElementById('galleryInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p class="gallery-upload-hint">Click or drop photos here</p>
+          <span class="upload-hint">Select multiple — PNG, JPG up to 5 MB each</span>
+        </div>
+        <input type="file" name="gallery_images" id="galleryInput"
+               accept="image/*" multiple
+               style="display:none;"
+               onchange="previewGalleryFiles(this)" />
+
+        <!-- Preview strip for new files before upload -->
+        <div id="galleryPreviewStrip" class="gallery-preview-strip hidden"></div>
+
+        <div id="galleryUploadActions" class="form-actions hidden" style="margin-top:12px;padding-top:0;border:none;">
+          <button type="submit" class="btn btn-primary btn-sm">Upload Photos</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="clearGalleryPreview()">Clear</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+  </div><!-- /form-side -->
 
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Slug auto-generate on Add
+// ── Slug auto-generate on Add ──────────────────────────────────
 {% if action == 'Add' %}
 document.querySelector('[name="product_name"]').addEventListener('input', function () {
   const slug = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -198,6 +264,7 @@ document.querySelector('[name="product_name"]').addEventListener('input', functi
 });
 {% endif %}
 
+// ── Cover image preview ────────────────────────────────────────
 function previewImage(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -212,6 +279,59 @@ function previewImage(input) {
   }
 }
 
+// ── Gallery preview before upload ─────────────────────────────
+function previewGalleryFiles(input) {
+  const strip  = document.getElementById('galleryPreviewStrip');
+  const actions = document.getElementById('galleryUploadActions');
+  strip.innerHTML = '';
+
+  if (!input.files || !input.files.length) {
+    strip.classList.add('hidden');
+    actions.classList.add('hidden');
+    return;
+  }
+
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const wrap = document.createElement('div');
+      wrap.className = 'gallery-preview-item';
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'gallery-thumb-img';
+      wrap.appendChild(img);
+      strip.appendChild(wrap);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  strip.classList.remove('hidden');
+  actions.classList.remove('hidden');
+}
+
+function clearGalleryPreview() {
+  document.getElementById('galleryInput').value = '';
+  const strip = document.getElementById('galleryPreviewStrip');
+  strip.innerHTML = '';
+  strip.classList.add('hidden');
+  document.getElementById('galleryUploadActions').classList.add('hidden');
+}
+
+// ── Drag-and-drop on gallery zone ─────────────────────────────
+const dropZone = document.getElementById('galleryDropZone');
+if (dropZone) {
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const input = document.getElementById('galleryInput');
+    input.files = e.dataTransfer.files;
+    previewGalleryFiles(input);
+  });
+}
+
+// ── Variant form helpers ───────────────────────────────────────
 function openVariantForm() {
   document.getElementById('variantForm').classList.remove('hidden');
 }
@@ -239,4 +359,92 @@ function editVariant(pk, color, size, sku, stock, price, isActive) {
   openVariantForm();
 }
 </script>
+
+<style>
+/* ── Gallery grid (existing photos) ─────────────────────── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 16px 16px 0;
+}
+
+.gallery-item {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.04);
+}
+
+.gallery-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  background: rgba(0,0,0,0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: #fff;
+  z-index: 10;
+  text-decoration: none;
+}
+
+.gallery-item:hover .gallery-delete-btn {
+  opacity: 1;
+}
+
+/* ── Upload drop zone ────────────────────────────────────── */
+.gallery-upload-zone {
+  margin: 16px 16px 0;
+  border: 1.5px dashed rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: rgba(255,255,255,0.35);
+}
+
+.gallery-upload-zone:hover,
+.gallery-upload-zone.drag-over {
+  border-color: rgba(139,92,246,0.6);
+  background: rgba(139,92,246,0.05);
+  color: rgba(255,255,255,0.6);
+}
+
+.gallery-upload-hint {
+  font-size: 0.82rem;
+  margin: 8px 0 4px;
+}
+
+/* ── Preview strip (new files, before upload) ────────────── */
+.gallery-preview-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px 0;
+}
+
+.gallery-preview-item {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1.5px solid rgba(139,92,246,0.4);
+  flex-shrink: 0;
+}
+</style>
 {% endblock %}

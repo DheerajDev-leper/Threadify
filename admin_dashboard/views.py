@@ -1,6 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
 from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Sum, Count, Avg, Q
@@ -69,8 +75,81 @@ def admin_login(request):
     return render(request, 'admin_panel/login.html', {})
 
 
+def admin_logout(request):
+    auth_logout(request)
+    return redirect('admin_login')
+
+
+def admin_forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        try:
+            user = Account.objects.get(email=email)
+            if not getattr(user, 'is_any_admin', False):
+                # Don't reveal that non-admin accounts exist
+                pass
+            else:
+                uid   = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+                reset_url = request.build_absolute_uri(
+                    reverse('admin_reset_password', kwargs={'uidb64': uid, 'token': token})
+                )
+                send_mail(
+                    subject = 'StyleAdmin — Password Reset',
+                    message = (
+                        f"Hi {user.first_name},\n\n"
+                        f"Click the link below to reset your StyleAdmin password:\n\n"
+                        f"{reset_url}\n\n"
+                        f"This link expires in 1 hour. If you didn't request this, ignore this email.\n\n"
+                        f"— StyleAdmin"
+                    ),
+                    from_email = settings.DEFAULT_FROM_EMAIL,
+                    recipient_list = [email],
+                    fail_silently = True,
+                )
+        except Account.DoesNotExist:
+            pass  # silently ignore — don't reveal whether email exists
+
+        # Always show the same confirmation to prevent email enumeration
+        return render(request, 'admin_panel/password/forgot_password_done.html', {'email': email})
+
+    return render(request, 'admin_panel/password/forgot_password.html')
+
+
+def admin_reset_password(request, uidb64, token):
+    try:
+        uid  = force_str(urlsafe_base64_decode(uidb64))
+        user = Account.objects.get(pk=uid)
+    except (Account.DoesNotExist, ValueError, TypeError):
+        user = None
+
+    token_valid = user is not None and default_token_generator.check_token(user, token)
+
+    if not token_valid:
+        return render(request, 'admin_panel/password/reset_password_invalid.html')
+
+    if request.method == 'POST':
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+
+        if len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+        elif password1 != password2:
+            messages.error(request, 'Passwords do not match.')
+        else:
+            user.set_password(password1)
+            user.save()
+            messages.success(request, 'Password updated successfully. Please sign in.')
+            return redirect('admin_login')
+
+    return render(request, 'admin_panel/password/reset_password.html', {
+        'uidb64': uidb64,
+        'token':  token,
+    })
+
+
+
 def shop_register(request):
-    """Shop owner self-registration page."""
     if request.user.is_authenticated:
         return redirect('admin_dashboard')
 
@@ -124,6 +203,21 @@ def shop_register(request):
             slug        = slug,
             description = shop_desc,
             is_approved = False,
+        )
+
+        send_mail(
+            subject    = 'StyleAdmin — Shop Registration Received',
+            message    = (
+                f"Hi {first_name},\n\n"
+                f"Thanks for registering your shop \"{shop_name}\" on StyleAdmin.\n\n"
+                f"Your application is currently under review. Our team will verify your details "
+                f"and you'll receive another email once your shop is approved.\n\n"
+                f"In the meantime, if you have any questions feel free to reply to this email.\n\n"
+                f"— The StyleAdmin Team"
+            ),
+            from_email     = settings.DEFAULT_FROM_EMAIL,
+            recipient_list = [email],
+            fail_silently  = True,
         )
 
         messages.success(
@@ -372,11 +466,12 @@ def product_edit(request, pk):
         return redirect('admin_product_list')
 
     return render(request, 'admin_panel/products/form.html', {
-        'product'    : product,
-        'categories' : categories,
-        'variants'   : variants,
-        'action'     : 'Edit',
-        'is_super'   : request.user.is_super_admin,
+        'product'         : product,
+        'categories'      : categories,
+        'variants'        : variants,
+        'product_gallery' : ProductGallery.objects.filter(product=product),
+        'action'          : 'Edit',
+        'is_super'        : request.user.is_super_admin,
     })
 
 
@@ -455,6 +550,42 @@ def variant_delete(request, pk):
         return redirect('admin_product_list')
     variant.delete()
     messages.success(request, 'Variant deleted.')
+    return redirect('admin_product_edit', pk=product_pk)
+
+
+# ─── Gallery ──────────────────────────────────────────────────────────────────
+
+@login_required(login_url='admin_login')
+@user_passes_test(is_any_admin, login_url='admin_login')
+def gallery_add(request, product_pk):
+    product = get_object_or_404(Product, pk=product_pk)
+    if not request.user.is_super_admin and product.shop != request.user.shop:
+        messages.error(request, 'Permission denied.')
+        return redirect('admin_product_list')
+    if request.method == 'POST':
+        images = request.FILES.getlist('gallery_images')
+        if not images:
+            messages.warning(request, 'No images selected.')
+            return redirect('admin_product_edit', pk=product_pk)
+        for img in images:
+            ProductGallery.objects.create(product=product, image=img)
+        messages.success(request, f'{len(images)} photo(s) added to gallery.')
+    return redirect('admin_product_edit', pk=product_pk)
+
+
+@login_required(login_url='admin_login')
+@user_passes_test(is_any_admin, login_url='admin_login')
+def gallery_delete(request, pk):
+    gallery_img = get_object_or_404(ProductGallery, pk=pk)
+    product_pk  = gallery_img.product.pk
+    if not request.user.is_super_admin and gallery_img.product.shop != request.user.shop:
+        messages.error(request, 'Permission denied.')
+        return redirect('admin_product_list')
+    storage = gallery_img.image.storage
+    if storage.exists(gallery_img.image.name):
+        storage.delete(gallery_img.image.name)
+    gallery_img.delete()
+    messages.success(request, 'Photo removed.')
     return redirect('admin_product_edit', pk=product_pk)
 
 
@@ -646,6 +777,21 @@ def shop_approve(request, pk):
     shop = get_object_or_404(Shop, pk=pk)
     shop.is_approved = True
     shop.save()
+    login_url = request.build_absolute_uri(reverse('admin_login'))
+    send_mail(
+        subject    = 'StyleAdmin — Your Shop Has Been Approved! 🎉',
+        message    = (
+            f"Hi {shop.owner.first_name},\n\n"
+            f"Great news — your shop \"{shop.name}\" has been approved by our team!\n\n"
+            f"You can now sign in to your StyleAdmin dashboard and start adding products:\n"
+            f"{login_url}\n\n"
+            f"If you have any questions, feel free to reach out.\n\n"
+            f"— The StyleAdmin Team"
+        ),
+        from_email     = settings.DEFAULT_FROM_EMAIL,
+        recipient_list = [shop.owner.email],
+        fail_silently  = True,
+    )
     messages.success(request, f'"{shop.name}" has been approved.')
     return redirect('admin_shop_owner_list')
 
@@ -788,5 +934,3 @@ def review_delete(request, pk):
     return render(request, 'admin_panel/products/confirm_delete.html', {
         'object': review, 'type': 'Review'
     })
-
-
