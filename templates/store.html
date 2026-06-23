@@ -24,9 +24,7 @@
   <div class="items-bar">
     <span class="count"><b>{{ products_count }}</b> pieces found</span>
     <div class="d-flex align-items-center gap-3" style="gap:1rem;display:flex!important;">
-      <!-- Active filter tags -->
       <div class="active-filters" id="activeFilters"></div>
-      <!-- Toggle button -->
       <button class="filter-toggle-btn" id="filterToggle" onclick="toggleFilters()">
         <i class="fa fa-sliders"></i> Filter
       </button>
@@ -53,19 +51,22 @@
           </div>
         </div>
 
-        <!-- Color -->
+        <!-- ── Color — dynamic from DB so values always match stored variants ── -->
         <div>
           <div class="filter-section-title">Color</div>
           <div class="filter-color-dots" id="colorDotsFilter">
-            <span class="filter-color-dot {% if 'black' in selected_colors %}active{% endif %}" data-value="black" style="background:#1a1a1a;" onclick="toggleColorFilter(this)" title="Black"></span>
-            <span class="filter-color-dot {% if 'white' in selected_colors %}active{% endif %}" data-value="white" style="background:#f5f5f5;" onclick="toggleColorFilter(this)" title="White"></span>
-            <span class="filter-color-dot {% if 'navy' in selected_colors %}active{% endif %}"  data-value="navy"  style="background:#1b2a4a;" onclick="toggleColorFilter(this)" title="Navy"></span>
-            <span class="filter-color-dot {% if 'brown' in selected_colors %}active{% endif %}" data-value="brown" style="background:#6b3f2a;" onclick="toggleColorFilter(this)" title="Brown"></span>
-            <span class="filter-color-dot {% if 'gold' in selected_colors %}active{% endif %}"  data-value="gold"  style="background:#c9a84c;" onclick="toggleColorFilter(this)" title="Gold"></span>
-            <span class="filter-color-dot {% if 'grey' in selected_colors %}active{% endif %}"  data-value="grey"  style="background:#8a8a8a;" onclick="toggleColorFilter(this)" title="Grey"></span>
+            {% for color in available_colors %}
+            <span class="filter-color-dot {% if color in selected_colors %}active{% endif %}"
+                  data-value="{{ color }}"
+                  onclick="toggleColorFilter(this)"
+                  title="{{ color }}">
+            </span>
+            {% endfor %}
           </div>
           <div id="colorInputs">
-            {% for c in selected_colors %}<input type="hidden" name="color" value="{{ c }}">{% endfor %}
+            {% for c in selected_colors %}
+            <input type="hidden" name="color" value="{{ c }}">
+            {% endfor %}
           </div>
         </div>
 
@@ -136,7 +137,13 @@
           {% if product.shop %}
           <span class="pcard-seller">Sold by {{ product.shop.name }}</span>
           {% endif %}
-          <span class="pcard-price">Rs{{ product.price }}</span>
+          <span class="pcard-price">
+            {% if product.min_variant_price %}
+              From Rs{{ product.min_variant_price|floatformat:0 }}
+            {% else %}
+              Rs{{ product.price }}
+            {% endif %}
+          </span>
         </div>
         <div class="pcard-hover-bar">View Details</div>
         <div class="pcard-gold-line"></div>
@@ -183,6 +190,85 @@
 
 </div>
 </section>
+
+<!-- ── Paint filter color dots with real colours ───────────────────── -->
+<style>
+.filter-color-dot {
+  /* Give dots a minimum size in case the color map doesn't fire */
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.15);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  position: relative;
+}
+.filter-color-dot:hover {
+  transform: scale(1.12);
+  border-color: rgba(255,255,255,0.4);
+}
+.filter-color-dot.active {
+  border-color: var(--gold, #c9a84c);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.35);
+}
+/* Tooltip label on hover */
+.filter-color-dot::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.filter-color-dot:hover::after {
+  opacity: 1;
+}
+</style>
+
+<script>
+/* ── Apply real background colours to the filter dots ─────────────────
+   Same COLOR_MAP as product_detail.html — add entries here as needed. */
+(function applyFilterDotColors() {
+  const COLOR_MAP = {
+    'black':      '#1c1c1c',
+    'white':      '#f5f5f5',
+    'grey':       '#9ca3af',
+    'gray':       '#9ca3af',
+    'navy blue':  '#1e3a5f',
+    'navy':       '#1e3a5f',
+    'blue':       '#2563eb',
+    'red':        '#dc2626',
+    'maroon':     '#7f1d1d',
+    'pink':       '#ec4899',
+    'purple':     '#7c3aed',
+    'green':      '#16a34a',
+    'olive':      '#5c6b2f',
+    'yellow':     '#facc15',
+    'mustard':    '#d4a017',
+    'orange':     '#f97316',
+    'brown':      '#78350f',
+    'beige':      '#d8c4a0',
+    'khaki':      '#bdb76b',
+    'multicolor': 'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)',
+    'multi':      'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)',
+  };
+
+  document.querySelectorAll('.filter-color-dot').forEach(dot => {
+    const name = (dot.dataset.value || '').toLowerCase().trim();
+    const bg   = COLOR_MAP[name];
+    if (bg) dot.style.background = bg;
+  });
+})();
+</script>
 
 <script src="{% static 'js/store.js' %}" type="text/javascript"></script>
 

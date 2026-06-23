@@ -28,6 +28,7 @@ urlpatterns = [
     # ── Gallery ──────────────────────────────────────────────────────
     path('products/<int:product_pk>/gallery/add/',      views.gallery_add,    name='admin_gallery_add'),
     path('gallery/<int:pk>/delete/',                    views.gallery_delete, name='admin_gallery_delete'),
+    path('gallery/<int:pk>/color/', views.admin_gallery_color, name='admin_gallery_color'),
 
     # ── Categories (super admin only) ────────────────────────────────
     path('categories/',                     views.category_list,        name='admin_category_list'),

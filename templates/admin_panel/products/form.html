@@ -31,15 +31,7 @@
           <textarea name="description" rows="5" class="form-textarea" placeholder="Product description…">{{ product.description }}</textarea>
         </div>
 
-        <div class="form-grid-3">
-          <div class="form-group">
-            <label class="form-label">Price (₹) <span class="required">*</span></label>
-            <input type="number" name="price" value="{{ product.price }}" required min="0" step="0.01" class="form-input" placeholder="0.00" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Stock <span class="required">*</span></label>
-            <input type="number" name="stock" value="{{ product.stock }}" required min="0" class="form-input" placeholder="0" />
-          </div>
+        <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label">Category <span class="required">*</span></label>
             <select name="category" required class="form-select">
@@ -48,6 +40,24 @@
               <option value="{{ cat.pk }}" {% if product.category_id == cat.pk %}selected{% endif %}>{{ cat.category_name }}</option>
               {% endfor %}
             </select>
+          </div>
+          <div class="form-group">
+            <div class="variant-price-notice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>Price &amp; stock are set per variant below. The displayed price on the storefront is derived automatically from your variants.</span>
+            </div>
+            {% if action == 'Edit' and variants %}
+            <div class="variant-price-summary" id="variantPriceSummary">
+              {% with prices=variants|dictsort:"price" %}
+              <span class="vps-label">Variant prices:</span>
+              {% for v in variants %}
+              {% if v.price %}
+              <span class="vps-pill">{{ v.size|default:"—" }} / {{ v.color|default:"—" }} — ₹{{ v.price }}</span>
+              {% endif %}
+              {% endfor %}
+              {% endwith %}
+            </div>
+            {% endif %}
           </div>
         </div>
 
@@ -70,45 +80,55 @@
     <div class="card" style="margin-top:16px">
       <div class="card-header">
         <h3 class="card-title">Variants</h3>
-        <button type="button" class="btn btn-primary btn-sm" onclick="openVariantForm()">+ Add Variant</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openVariantFormForAdd()">+ Add Variant</button>
       </div>
 
       <div id="variantForm" class="variation-form hidden">
         <form method="post" id="variantFormEl" action="{% url 'admin_variant_add' product.pk %}">
           {% csrf_token %}
-          <div class="form-grid-3">
-            <div class="form-group">
-              <label class="form-label">Colour</label>
-              <input type="text" name="color" id="variantColorField" class="form-input" placeholder="e.g. Red" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Size</label>
-              <input type="text" name="size" id="variantSizeField" class="form-input" placeholder="e.g. XL" />
-            </div>
+          <!-- Colour picker -->
+          <div class="form-group">
+            <label class="form-label">Colour</label>
+            <div class="swatch-picker" id="colorSwatchPicker"><!-- filled by JS --></div>
+            <input type="text" id="variantColorCustomField" class="form-input hidden chip-custom-input" placeholder="Custom colour name" />
+            <div class="chip-selected-label" id="colorSelectedLabel">No colour selected</div>
+            <input type="hidden" name="color" id="variantColorField" />
+          </div>
+
+          <!-- Size picker — auto-determined from product category -->
+          <div class="form-group">
+            <label class="form-label">Size</label>
+            <div class="size-pill-row" id="sizePillRow"><!-- filled by JS --></div>
+            <input type="text" id="variantSizeCustomField" class="form-input hidden chip-custom-input" placeholder="Custom size" />
+            <input type="hidden" name="size" id="variantSizeField" />
+          </div>
+
+          <!-- Price per size -->
+          <div class="form-group" id="sizePriceGroup">
+            <label class="form-label">
+              Price for this size (₹)
+              <span class="size-price-hint">— leave blank to use the product's default price</span>
+            </label>
+            <input type="number" name="price" id="variantPriceField" class="form-input size-price-input" placeholder="e.g. 799.00" step="0.01" min="0" />
+          </div>
+
+          <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">SKU</label>
               <input type="text" name="sku" id="variantSkuField" class="form-input" placeholder="Optional" />
             </div>
-          </div>
-          <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Stock <span class="required">*</span></label>
               <input type="number" name="stock" id="variantStockField" value="0" required min="0" class="form-input" />
             </div>
-            <div class="form-group">
-              <label class="form-label">Price Override (₹)</label>
-              <input type="number" name="price" id="variantPriceField" class="form-input" placeholder="Leave blank for default" step="0.01" min="0" />
-            </div>
-            <div class="form-group">
-              <label class="form-label form-label-inline" style="margin-top:1.7rem;">
-                <input type="checkbox" name="is_active" id="variantActiveField" class="form-checkbox" checked />
-                Active
-              </label>
-            </div>
           </div>
-          <p class="text-muted" style="font-size:0.78rem;margin:-0.3rem 0 0.8rem;">
-            Leave Colour or Size blank if this product doesn't vary along that dimension — fill in both for combinations like "Red, XL".
-          </p>
+
+          <div class="form-group">
+            <label class="form-label form-label-inline">
+              <input type="checkbox" name="is_active" id="variantActiveField" class="form-checkbox" checked />
+              Active
+            </label>
+          </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary btn-sm" id="variantSubmitBtn">Save Variant</button>
             <button type="button" class="btn btn-ghost btn-sm" onclick="closeVariantForm()">Cancel</button>
@@ -197,57 +217,222 @@
       </div>
     </div>
 
-    <!-- Gallery images (edit only) -->
-    {% if action == 'Edit' %}
-    <div class="card" style="margin-top:16px">
-      <div class="card-header">
-        <h3 class="card-title">Gallery</h3>
-        <span class="text-muted" style="font-size:0.72rem;">Shown as thumbnails on product page</span>
+
+
+      {% if action == 'Edit' %}
+      <div class="card" style="margin-top:16px">
+        <div class="card-header">
+          <h3 class="card-title">Gallery</h3>
+          <span class="text-muted" style="font-size:0.72rem;">Tag each image to a colour so it appears when that colour is selected</span>
+        </div>
+
+        <!-- ── Existing gallery images ── -->
+        {% if product_gallery %}
+        <div class="gallery-grid" id="galleryGrid">
+          {% for img in product_gallery %}
+          <div class="gallery-item" id="gallery-item-{{ img.pk }}">
+            <img src="{{ img.image.url }}" alt="Gallery {{ forloop.counter }}" class="gallery-thumb-img" />
+
+            <!-- Colour tag badge + quick-edit -->
+            <div class="gallery-color-tag" title="Colour tag: {{ img.color|default:'All colours' }}">
+              {% if img.color %}
+                <span class="gtag-pill gtag-pill--set">{{ img.color }}</span>
+              {% else %}
+                <span class="gtag-pill gtag-pill--unset">All</span>
+              {% endif %}
+            </div>
+
+            <!-- Quick colour-tag edit form (shown on hover via CSS) -->
+            <form method="post"
+                  action="{% url 'admin_gallery_color' img.pk %}"
+                  class="gallery-color-form"
+                  onsubmit="return submitColorTag(event, this)">
+              {% csrf_token %}
+              <select name="color" class="gtag-select">
+                <option value="">— All colours —</option>
+                {% for c in available_colors %}
+                <option value="{{ c }}" {% if img.color == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+                {# Custom option: if img.color is set but not in available_colors list #}
+                {% if img.color and img.color not in available_colors %}
+                <option value="{{ img.color }}" selected>{{ img.color }}</option>
+                {% endif %}
+              </select>
+              <button type="submit" class="gtag-save-btn" title="Save colour tag">✓</button>
+            </form>
+
+            <!-- Delete button -->
+            <a href="{% url 'admin_gallery_delete' img.pk %}"
+              class="gallery-delete-btn"
+              onclick="return confirm('Remove this photo?')"
+              title="Remove">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ── Upload new gallery images ── -->
+        <form method="post" enctype="multipart/form-data"
+              action="{% url 'admin_gallery_add' product.pk %}"
+              id="galleryUploadForm">
+          {% csrf_token %}
+
+          <!-- Colour tag for the batch being uploaded -->
+          <div style="padding: 14px 16px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <label style="font-size:12px; font-weight:600; color:var(--text-dim); white-space:nowrap;">
+              Tag uploaded images to colour:
+            </label>
+            <select name="color" class="form-select" style="max-width:200px; font-size:12px; padding:6px 10px;">
+              <option value="">— All colours (default) —</option>
+              {% for c in available_colors %}
+              <option value="{{ c }}">{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="gallery-upload-zone" id="galleryDropZone"
+              onclick="document.getElementById('galleryInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="gallery-upload-hint">Click or drop photos here</p>
+            <span class="upload-hint">Select multiple — PNG, JPG up to 5 MB each</span>
+          </div>
+          <input type="file" name="gallery_images" id="galleryInput"
+                accept="image/*" multiple
+                style="display:none;"
+                onchange="previewGalleryFiles(this)" />
+
+          <div id="galleryPreviewStrip" class="gallery-preview-strip hidden"></div>
+
+          <div id="galleryUploadActions" class="form-actions hidden" style="margin-top:12px;padding-top:0;border:none;">
+            <button type="submit" class="btn btn-primary btn-sm">Upload Photos</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="clearGalleryPreview()">Clear</button>
+          </div>
+        </form>
       </div>
 
-      <!-- Existing gallery images -->
-      {% if product_gallery %}
-      <div class="gallery-grid" id="galleryGrid">
-        {% for img in product_gallery %}
-        <div class="gallery-item" id="gallery-item-{{ img.pk }}">
-          <img src="{{ img.image.url }}" alt="Gallery {{ forloop.counter }}" class="gallery-thumb-img" />
-          <a href="{% url 'admin_gallery_delete' img.pk %}"
-             class="gallery-delete-btn"
-             onclick="return confirm('Remove this photo?')"
-             title="Remove">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </a>
-        </div>
-        {% endfor %}
-      </div>
+      <style>
+      /* ── Colour tag overlay on gallery item ─────────────────── */
+      .gallery-color-tag {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      .gtag-pill {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 99px;
+        line-height: 1.4;
+      }
+
+      .gtag-pill--set {
+        background: rgba(124, 92, 252, 0.85);
+        color: #fff;
+      }
+
+      .gtag-pill--unset {
+        background: rgba(255,255,255,0.15);
+        color: rgba(255,255,255,0.6);
+      }
+
+      /* ── Quick colour-tag edit form — appears on hover ──────── */
+      .gallery-color-form {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.72);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px;
+        z-index: 8;
+        border-radius: 6px;
+      }
+
+      .gallery-item:hover .gallery-color-form {
+        display: flex;
+      }
+
+      /* Hide the colour tag badge while the form is showing */
+      .gallery-item:hover .gallery-color-tag {
+        display: none;
+      }
+
+      .gtag-select {
+        width: 100%;
+        font-size: 11px;
+        padding: 4px 6px;
+        background: var(--surface-2, #1e1e2e);
+        color: var(--text, #fff);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 5px;
+      }
+
+      .gtag-save-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--purple-dim, rgba(124,92,252,0.3));
+        border: 1px solid rgba(124,92,252,0.5);
+        color: var(--purple-light, #a78bfa);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s;
+      }
+
+      .gtag-save-btn:hover {
+        background: rgba(124,92,252,0.55);
+      }
+      </style>
+
+      <script>
+      /**
+       * AJAX submit for the inline colour-tag form so the page doesn't reload.
+       * Falls back to normal submit if fetch isn't available.
+       */
+      function submitColorTag(e, form) {
+        e.preventDefault();
+        const data = new FormData(form);
+        fetch(form.action, { method: 'POST', body: data, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => {
+            if (r.ok) {
+              // Update the badge without a reload
+              const item  = form.closest('.gallery-item');
+              const pill  = item.querySelector('.gtag-pill');
+              const color = data.get('color') || '';
+              if (color) {
+                pill.className = 'gtag-pill gtag-pill--set';
+                pill.textContent = color;
+              } else {
+                pill.className = 'gtag-pill gtag-pill--unset';
+                pill.textContent = 'All';
+              }
+            }
+          })
+          .catch(() => form.submit()); // fallback
+        return false;
+      }
+      </script>
       {% endif %}
-
-      <!-- Upload new gallery images -->
-      <form method="post" enctype="multipart/form-data"
-            action="{% url 'admin_gallery_add' product.pk %}"
-            id="galleryUploadForm">
-        {% csrf_token %}
-        <div class="gallery-upload-zone" id="galleryDropZone"
-             onclick="document.getElementById('galleryInput').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <p class="gallery-upload-hint">Click or drop photos here</p>
-          <span class="upload-hint">Select multiple — PNG, JPG up to 5 MB each</span>
-        </div>
-        <input type="file" name="gallery_images" id="galleryInput"
-               accept="image/*" multiple
-               style="display:none;"
-               onchange="previewGalleryFiles(this)" />
-
-        <!-- Preview strip for new files before upload -->
-        <div id="galleryPreviewStrip" class="gallery-preview-strip hidden"></div>
-
-        <div id="galleryUploadActions" class="form-actions hidden" style="margin-top:12px;padding-top:0;border:none;">
-          <button type="submit" class="btn btn-primary btn-sm">Upload Photos</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="clearGalleryPreview()">Clear</button>
-        </div>
-      </form>
-    </div>
-    {% endif %}
 
   </div><!-- /form-side -->
 
@@ -331,36 +516,385 @@ if (dropZone) {
   });
 }
 
-// ── Variant form helpers ───────────────────────────────────────
-function openVariantForm() {
-  document.getElementById('variantForm').classList.remove('hidden');
+// ── Variant colour / size pickers (only present in Edit mode) ──
+if (document.getElementById('variantForm')) {
+
+  const PRODUCT_CATEGORY = "{{ product.category.category_name|default:'' }}".toLowerCase();
+
+  const COLOR_SWATCHES = [
+    { name: 'Black',      hex: '#1c1c1c' },
+    { name: 'White',      hex: '#ffffff' },
+    { name: 'Grey',       hex: '#9ca3af' },
+    { name: 'Navy Blue',  hex: '#1e3a5f' },
+    { name: 'Blue',       hex: '#2563eb' },
+    { name: 'Red',        hex: '#dc2626' },
+    { name: 'Maroon',     hex: '#7f1d1d' },
+    { name: 'Pink',       hex: '#ec4899' },
+    { name: 'Purple',     hex: '#7c3aed' },
+    { name: 'Green',      hex: '#16a34a' },
+    { name: 'Olive',      hex: '#5c6b2f' },
+    { name: 'Yellow',     hex: '#facc15' },
+    { name: 'Mustard',    hex: '#d4a017' },
+    { name: 'Orange',     hex: '#f97316' },
+    { name: 'Brown',      hex: '#78350f' },
+    { name: 'Beige',      hex: '#d8c4a0' },
+    { name: 'Khaki',      hex: '#bdb76b' },
+    { name: 'Multicolor', hex: 'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)' },
+  ];
+
+  // ── Size chart: auto-determined from product category ─────────
+  const ALL_SIZE_CHARTS = {
+    // Tops — alpha sizes
+    tops:      ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'],
+    // Bottoms — waist numbers (Indian standard)
+    bottoms:   ['28', '30', '32', '34', '36', '38', '40', '42', '44'],
+    // Footwear — UK sizes
+    footwear:  ['UK 4', 'UK 5', 'UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11', 'UK 12'],
+    // Kids — age-based
+    kids:      ['2Y', '4Y', '6Y', '8Y', '10Y', '12Y', '14Y'],
+    // Innerwear / bra (cup-agnostic band sizes)
+    innerwear: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    // Free / one-size
+    free:      ['Free Size'],
+  };
+
+  function getSizesForCategory(categoryName) {
+    const c = (categoryName || '').toLowerCase();
+    if (/pant|jean|trouser|chino|cargo|jogger|track\s*pant|legging|bottom|palazzo|skirt|dhoti|lungi/.test(c))
+      return ALL_SIZE_CHARTS.bottoms;
+    if (/shoe|footwear|sneaker|sandal|boot|slipper|chappal|heel|loafer|oxford|flip.?flop/.test(c))
+      return ALL_SIZE_CHARTS.footwear;
+    if (/kid|child|infant|baby|toddler|girl|boy/.test(c))
+      return ALL_SIZE_CHARTS.kids;
+    if (/innerwear|underwear|brief|boxer|bra|lingerie|vest|camisole/.test(c))
+      return ALL_SIZE_CHARTS.innerwear;
+    if (/free\s*size|cap|hat|belt|wallet|bag|watch|jewel|accessories?|mask|glove|scarf/.test(c))
+      return ALL_SIZE_CHARTS.free;
+    // Default: shirts, t-shirts, kurtis, tops, jackets, hoodies, etc.
+    return ALL_SIZE_CHARTS.tops;
+  }
+
+  const CATEGORY_SIZES = getSizesForCategory(PRODUCT_CATEGORY);
+
+  /* — Colour swatches — */
+  function renderColorSwatches() {
+    const wrap = document.getElementById('colorSwatchPicker');
+    wrap.innerHTML = '';
+    COLOR_SWATCHES.forEach(c => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'swatch-btn';
+      btn.title = c.name;
+      btn.dataset.color = c.name;
+      btn.style.background = c.hex;
+      btn.addEventListener('click', () => selectColor(c.name, btn));
+      wrap.appendChild(btn);
+    });
+    const customBtn = document.createElement('button');
+    customBtn.type = 'button';
+    customBtn.className = 'swatch-btn swatch-btn-custom';
+    customBtn.title = 'Custom colour';
+    customBtn.textContent = '+';
+    customBtn.addEventListener('click', () => selectColorCustom(customBtn));
+    wrap.appendChild(customBtn);
+  }
+
+  function clearColorSelection() {
+    document.querySelectorAll('#colorSwatchPicker .swatch-btn').forEach(b => b.classList.remove('selected'));
+  }
+
+  function selectColor(name, btnEl) {
+    clearColorSelection();
+    btnEl.classList.add('selected');
+    document.getElementById('variantColorField').value = name;
+    document.getElementById('variantColorCustomField').classList.add('hidden');
+    document.getElementById('colorSelectedLabel').textContent = name;
+  }
+
+  function selectColorCustom(btnEl) {
+    clearColorSelection();
+    btnEl.classList.add('selected');
+    const customField = document.getElementById('variantColorCustomField');
+    customField.classList.remove('hidden');
+    customField.focus();
+    document.getElementById('variantColorField').value = customField.value.trim();
+    document.getElementById('colorSelectedLabel').textContent = customField.value.trim() || 'Type a custom colour…';
+  }
+
+  document.getElementById('variantColorCustomField').addEventListener('input', function () {
+    document.getElementById('variantColorField').value = this.value.trim();
+    document.getElementById('colorSelectedLabel').textContent = this.value.trim() || 'Type a custom colour…';
+  });
+
+  /* — Size pills — auto-determined from product category — */
+  function renderSizePills() {
+    const wrap = document.getElementById('sizePillRow');
+    wrap.innerHTML = '';
+    CATEGORY_SIZES.forEach(size => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'size-pill';
+      btn.textContent = size;
+      btn.dataset.size = size;
+      btn.addEventListener('click', () => selectSize(size, btn));
+      wrap.appendChild(btn);
+    });
+    const customBtn = document.createElement('button');
+    customBtn.type = 'button';
+    customBtn.className = 'size-pill size-pill-custom';
+    customBtn.textContent = 'Other';
+    customBtn.addEventListener('click', () => selectSizeCustom(customBtn));
+    wrap.appendChild(customBtn);
+  }
+
+  function clearSizeSelection() {
+    document.querySelectorAll('#sizePillRow .size-pill').forEach(b => b.classList.remove('selected'));
+  }
+
+  function selectSize(size, btnEl) {
+    clearSizeSelection();
+    btnEl.classList.add('selected');
+    document.getElementById('variantSizeField').value = size;
+    document.getElementById('variantSizeCustomField').classList.add('hidden');
+  }
+
+  function selectSizeCustom(btnEl) {
+    clearSizeSelection();
+    btnEl.classList.add('selected');
+    const customField = document.getElementById('variantSizeCustomField');
+    customField.classList.remove('hidden');
+    customField.focus();
+    document.getElementById('variantSizeField').value = customField.value.trim();
+  }
+
+  document.getElementById('variantSizeCustomField').addEventListener('input', function () {
+    document.getElementById('variantSizeField').value = this.value.trim();
+  });
+
+  // Build pickers once on page load
+  renderColorSwatches();
+  renderSizePills();
+
+  /* — Apply an existing value to the pickers (used when editing) — */
+  function applyColorSelection(color) {
+    if (!color) {
+      clearColorSelection();
+      document.getElementById('variantColorField').value = '';
+      document.getElementById('variantColorCustomField').classList.add('hidden');
+      document.getElementById('colorSelectedLabel').textContent = 'No colour selected';
+      return;
+    }
+    const match = Array.from(document.querySelectorAll('#colorSwatchPicker .swatch-btn'))
+      .find(b => b.dataset.color && b.dataset.color.toLowerCase() === color.toLowerCase());
+    if (match) {
+      selectColor(match.dataset.color, match);
+    } else {
+      const customBtn = document.querySelector('#colorSwatchPicker .swatch-btn-custom');
+      clearColorSelection();
+      customBtn.classList.add('selected');
+      const customField = document.getElementById('variantColorCustomField');
+      customField.classList.remove('hidden');
+      customField.value = color;
+      document.getElementById('variantColorField').value = color;
+      document.getElementById('colorSelectedLabel').textContent = color;
+    }
+  }
+
+  function applySizeSelection(size) {
+    document.getElementById('variantSizeField').value = '';
+    document.getElementById('variantSizeCustomField').classList.add('hidden');
+    clearSizeSelection();
+    if (!size) return;
+    const match = Array.from(document.querySelectorAll('#sizePillRow .size-pill'))
+      .find(b => b.dataset.size && b.dataset.size.toLowerCase() === size.toLowerCase());
+    if (match) {
+      selectSize(match.dataset.size, match);
+    } else {
+      const customBtn = document.querySelector('#sizePillRow .size-pill-custom');
+      clearSizeSelection();
+      customBtn.classList.add('selected');
+      const customField = document.getElementById('variantSizeCustomField');
+      customField.classList.remove('hidden');
+      customField.value = size;
+      document.getElementById('variantSizeField').value = size;
+    }
+  }
+
+  // ── Variant form open / close / reset / edit ──────────────────
+  window.openVariantForm = function () {
+    document.getElementById('variantForm').classList.remove('hidden');
+  };
+
+  window.openVariantFormForAdd = function () {
+    resetVariantForm();
+    openVariantForm();
+  };
+
+  window.closeVariantForm = function () {
+    document.getElementById('variantForm').classList.add('hidden');
+    resetVariantForm();
+  };
+
+  window.resetVariantForm = function () {
+    document.getElementById('variantFormEl').reset();
+    document.getElementById('variantFormEl').action = "{% if product %}{% url 'admin_variant_add' product.pk %}{% endif %}";
+    document.getElementById('variantSubmitBtn').textContent = 'Save Variant';
+    applyColorSelection('');
+    applySizeSelection('');
+    document.getElementById('variantColorCustomField').value = '';
+    document.getElementById('variantSizeCustomField').value = '';
+  };
+
+  window.editVariant = function (pk, color, size, sku, stock, price, isActive) {
+    resetVariantForm();
+    applyColorSelection(color);
+    applySizeSelection(size);
+    document.getElementById('variantSkuField').value = sku;
+    document.getElementById('variantStockField').value = stock;
+    document.getElementById('variantPriceField').value = price;
+    document.getElementById('variantActiveField').checked = isActive;
+    document.getElementById('variantFormEl').action = "{% url 'admin_variant_edit' 999999 %}".replace('999999', pk);
+    document.getElementById('variantSubmitBtn').textContent = 'Update Variant';
+    openVariantForm();
+  };
 }
 
-function closeVariantForm() {
-  document.getElementById('variantForm').classList.add('hidden');
-  resetVariantForm();
-}
-
-function resetVariantForm() {
-  document.getElementById('variantFormEl').reset();
-  document.getElementById('variantFormEl').action = "{% if product %}{% url 'admin_variant_add' product.pk %}{% endif %}";
-  document.getElementById('variantSubmitBtn').textContent = 'Save Variant';
-}
-
-function editVariant(pk, color, size, sku, stock, price, isActive) {
-  document.getElementById('variantColorField').value = color;
-  document.getElementById('variantSizeField').value = size;
-  document.getElementById('variantSkuField').value = sku;
-  document.getElementById('variantStockField').value = stock;
-  document.getElementById('variantPriceField').value = price;
-  document.getElementById('variantActiveField').checked = isActive;
-  document.getElementById('variantFormEl').action = "{% url 'admin_variant_edit' 999999 %}".replace('999999', pk);
-  document.getElementById('variantSubmitBtn').textContent = 'Update Variant';
-  openVariantForm();
-}
 </script>
 
 <style>
+/* ── Colour swatch picker ──────────────────────────────────── */
+.swatch-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.swatch-btn {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.swatch-btn:hover { transform: scale(1.1); }
+
+.swatch-btn.selected {
+  border-color: var(--purple-light);
+  box-shadow: 0 0 0 3px var(--purple-dim);
+}
+
+.swatch-btn.selected::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0,0,0,0.9), 0 0 1px rgba(0,0,0,0.9);
+}
+
+.swatch-btn-custom {
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+}
+
+.swatch-btn-custom.selected::after { content: ''; }
+
+.chip-selected-label {
+  margin-top: 9px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chip-custom-input { margin-top: 9px; max-width: 220px; }
+
+/* ── Size pill selector ────────────────────────────────────── */
+.size-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.size-pill {
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.size-pill:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: var(--text);
+}
+
+.size-pill.selected {
+  background: var(--purple-dim);
+  border-color: rgba(124,92,252,0.45);
+  color: var(--purple-light);
+}
+
+.size-pill-custom { border-style: dashed; }
+
+/* ── Per-size price field ──────────────────────────────────── */
+.size-price-hint {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.size-price-input { max-width: 200px; }
+
+/* ── Variant-driven price notice ──────────────────────────── */
+.variant-price-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(124, 92, 252, 0.08);
+  border: 1px solid rgba(124, 92, 252, 0.25);
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-top: 22px; /* align with label-less sibling */
+}
+.variant-price-notice svg { flex-shrink: 0; margin-top: 1px; stroke: var(--purple-light); }
+
+.variant-price-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.vps-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.vps-pill {
+  font-size: 11.5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 99px;
+  padding: 3px 10px;
+  color: var(--text-dim);
+}
+
 /* ── Gallery grid (existing photos) ─────────────────────── */
 .gallery-grid {
   display: grid;

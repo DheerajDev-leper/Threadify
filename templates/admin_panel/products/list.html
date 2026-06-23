@@ -60,7 +60,15 @@
           </div>
         </td>
         <td>{{ product.category.category_name }}</td>
-        <td>₹{{ product.price }}</td>
+        <td>
+          {% with cheapest=product.variants.all|dictsort:"price"|first %}
+          {% if cheapest and cheapest.price %}
+            ₹{{ cheapest.price }}{% if product.variants.count > 1 %}+{% endif %}
+          {% else %}
+            ₹{{ product.price }}
+          {% endif %}
+          {% endwith %}
+        </td>
         <td>
           {% if product.stock == 0 %}
           <span class="badge badge-red">Out of stock</span>

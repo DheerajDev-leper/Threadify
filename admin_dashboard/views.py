@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -14,6 +15,11 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
 import json
+
+from django.contrib.admin.views.decorators import staff_member_required
+
+from django.views.decorators.http import require_POST
+ 
 
 from store.models import Product, ProductVariant, ReviewRating, ProductGallery
 from store.models import Shop          # ← your new Shop model
@@ -419,8 +425,8 @@ def product_add(request):
             product_name = product_name,
             slug         = slug,
             description  = description,
-            price        = price,
-            stock        = stock,
+            price        = 0,
+            stock        = stock or 0,
             category_id  = category_id,
             is_available = is_available,
             Image        = image,
@@ -442,21 +448,19 @@ def product_add(request):
 @user_passes_test(is_any_admin, login_url='admin_login')
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
-
+ 
     # Shop owners can only edit their own products
     if not request.user.is_super_admin and product.shop != request.user.shop:
         messages.error(request, 'You do not have permission to edit this product.')
         return redirect('admin_product_list')
-
+ 
     categories = Category.objects.all()
     variants = ProductVariant.objects.filter(product=product)
-
+ 
     if request.method == 'POST':
         product.product_name = request.POST.get('product_name')
         product.slug         = request.POST.get('slug')
         product.description  = request.POST.get('description')
-        product.price        = request.POST.get('price')
-        product.stock        = request.POST.get('stock')
         product.category_id  = request.POST.get('category')
         product.is_available = request.POST.get('is_available') == 'on'
         if request.FILES.get('Image'):
@@ -464,15 +468,27 @@ def product_edit(request, pk):
         product.save()
         messages.success(request, f'Product "{product.product_name}" updated.')
         return redirect('admin_product_list')
-
+ 
+    # ── NEW: colours already used in variants, for the gallery tag dropdown ──
+    available_colors = (
+        ProductVariant.objects
+        .filter(product=product, is_active=True)
+        .exclude(color='')
+        .values_list('color', flat=True)
+        .distinct()
+        .order_by('color')
+    )
+ 
     return render(request, 'admin_panel/products/form.html', {
-        'product'         : product,
-        'categories'      : categories,
-        'variants'        : variants,
-        'product_gallery' : ProductGallery.objects.filter(product=product),
-        'action'          : 'Edit',
-        'is_super'        : request.user.is_super_admin,
+        'product'          : product,
+        'categories'       : categories,
+        'variants'         : variants,
+        'product_gallery'  : ProductGallery.objects.filter(product=product),
+        'action'           : 'Edit',
+        'is_super'         : request.user.is_super_admin,
+        'available_colors' : available_colors,  # ← NEW
     })
+
 
 
 @login_required(login_url='admin_login')
@@ -498,25 +514,48 @@ def product_delete(request, pk):
 @user_passes_test(is_any_admin, login_url='admin_login')
 def variant_add(request, product_pk):
     product = get_object_or_404(Product, pk=product_pk)
+
     if not request.user.is_super_admin and product.shop != request.user.shop:
         messages.error(request, 'Permission denied.')
         return redirect('admin_product_list')
+
     if request.method == 'POST':
         try:
             ProductVariant.objects.create(
-                product   = product,
-                color     = request.POST.get('color', '').strip(),
-                size      = request.POST.get('size', '').strip(),
-                sku       = request.POST.get('sku', '').strip(),
-                stock     = request.POST.get('stock') or 0,
-                price     = request.POST.get('price') or None,
-                is_active = request.POST.get('is_active') == 'on',
+                product=product,
+                color=request.POST.get('color', '').strip(),
+                size=request.POST.get('size', '').strip(),
+                sku=request.POST.get('sku', '').strip(),
+                stock=request.POST.get('stock') or 0,
+                price=request.POST.get('price') or None,
+                is_active=request.POST.get('is_active') == 'on',
             )
-            messages.success(request, 'Variant added.')
-        except IntegrityError:
-            messages.error(request, 'A variant with that colour/size combination already exists.')
-    return redirect('admin_product_edit', pk=product_pk)
 
+            # Update product stock and price from variants
+            variants = ProductVariant.objects.filter(
+                product=product,
+                is_active=True
+            )
+
+            product.stock = sum(v.stock for v in variants)
+
+            prices = [
+                v.price for v in variants
+                if v.price is not None
+            ]
+
+            product.price = min(prices) if prices else 0
+            product.save()
+
+            messages.success(request, 'Variant added.')
+
+        except IntegrityError:
+            messages.error(
+                request,
+                'A variant with that colour/size combination already exists.'
+            )
+
+    return redirect('admin_product_edit', pk=product_pk)
 
 @login_required(login_url='admin_login')
 @user_passes_test(is_any_admin, login_url='admin_login')
@@ -567,11 +606,15 @@ def gallery_add(request, product_pk):
         if not images:
             messages.warning(request, 'No images selected.')
             return redirect('admin_product_edit', pk=product_pk)
+        color = request.POST.get('color', '').strip()  # ← NEW: read colour tag
         for img in images:
-            ProductGallery.objects.create(product=product, image=img)
+            ProductGallery.objects.create(
+                product=product,
+                image=img,
+                color=color,  # ← NEW: save colour tag on every uploaded image
+            )
         messages.success(request, f'{len(images)} photo(s) added to gallery.')
     return redirect('admin_product_edit', pk=product_pk)
-
 
 @login_required(login_url='admin_login')
 @user_passes_test(is_any_admin, login_url='admin_login')
@@ -717,7 +760,14 @@ def order_detail(request, pk):
 @user_passes_test(is_super_admin, login_url='admin_login')
 def customer_list(request):
     query     = request.GET.get('q', '')
-    customers = Account.objects.filter(is_admin=False).order_by('-date_joined')
+    buyer_ids = Order.objects.filter(is_ordered=True).values_list('user_id', flat=True).distinct()
+    
+    customers = Account.objects.filter(
+        id__in=buyer_ids
+    ).exclude(
+        role='super_admin'
+    ).order_by('-date_joined')
+    
     if query:
         customers = customers.filter(
             Q(first_name__icontains=query) |
@@ -934,3 +984,22 @@ def review_delete(request, pk):
     return render(request, 'admin_panel/products/confirm_delete.html', {
         'object': review, 'type': 'Review'
     })
+
+
+@staff_member_required
+@require_POST
+def admin_gallery_color(request, pk):
+    """
+    PATCH the `color` field of a ProductGallery entry.
+    Called via AJAX from the inline hover-form on the product edit page.
+    Returns HTTP 200 on success so the JS can update the badge without reload.
+    """
+    img = get_object_or_404(ProductGallery, pk=pk)
+    img.color = request.POST.get('color', '').strip()
+    img.save(update_fields=['color'])
+ 
+    # If the request came from AJAX return a simple 200; otherwise redirect back.
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse(status=200)
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+ 

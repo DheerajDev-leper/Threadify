@@ -55,10 +55,12 @@
               </div>
             </div>
             <!-- Price -->
-            <div>
-              <var class="price" style="font-size:1rem;">Rs{{ item.sub_total }}</var>
-              <small style="display:block;font-size:0.65rem;color:var(--text-faint);letter-spacing:0.08em;margin-top:2px;">Rs{{ item.product.price }} each</small>
-            </div>
+              <div>
+                <var class="price" style="font-size:1rem;">Rs{{ item.sub_total }}</var>
+                <small style="display:block;font-size:0.65rem;color:var(--text-faint);letter-spacing:0.08em;margin-top:2px;">
+                  Rs{% if item.variant %}{{ item.variant.effective_price }}{% else %}{{ item.product.price }}{% endif %} each
+                </small>
+              </div>
             <!-- Remove -->
             <div class="text-right">
               <a href="{% url 'clear_cart' item.product.id item.id %}" onclick="return confirm('Remove from selection?')" class="btn btn-danger">Remove</a>

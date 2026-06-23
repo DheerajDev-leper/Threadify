@@ -5,7 +5,7 @@ from category.models import Category
 from django.conf import settings
 from accounts.models import Account
 
-# Create your models here.
+
 class Product(models.Model):
     product_name = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(max_length=100, unique=True)
@@ -19,11 +19,11 @@ class Product(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
 
     shop = models.ForeignKey(
-    'Shop',
-    on_delete=models.SET_NULL,
-    null=True,
-    blank=True,
-    related_name='products',
+        'Shop',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products',
     )
 
     def get_url(self):
@@ -31,14 +31,14 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
-    
+
     def averageReview(self):
         reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(average=Avg('rating'))
         avg = 0
         if reviews['average'] is not None:
             avg = float(reviews['average'])
         return avg
-    
+
     def countReview(self):
         reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(count=Count('id'))
         count = 0
@@ -67,13 +67,11 @@ class Product(models.Model):
             .order_by('size')
         )
 
-    
+
 class ProductVariant(models.Model):
     """
     One purchasable colour/size combination for a product (e.g. "Red / XL"),
-    with its own stock count and optional price override — the same idea as
-    a SKU on a marketplace listing. Either `color` or `size` (or both) may
-    be left blank for products that don't vary along that axis.
+    with its own stock count and optional price override.
     """
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     color = models.CharField(max_length=100, blank=True)
@@ -98,12 +96,12 @@ class ProductVariant(models.Model):
 
     @property
     def effective_price(self):
-        """The price to charge for this combination — its own override, or the product's base price."""
         return self.price if self.price is not None else self.product.price
 
     @property
     def in_stock(self):
         return self.is_active and self.stock > 0
+
 
 class ReviewRating(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -118,13 +116,27 @@ class ReviewRating(models.Model):
 
     def __str__(self):
         return self.subject
-    
+
+
 class ProductGallery(models.Model):
     product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='store/products', max_length=255)
 
+    # ── NEW: tag this image to a specific colour variant ──────────────────
+    # Leave blank → image appears for every colour (useful for lifestyle/
+    # packaging shots that aren't colour-specific).
+    # Set to e.g. "Blue" → image only shows when Blue is selected.
+    color = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        help_text='Leave blank to show for all colours, or enter a colour '
+                  'name to show only when that colour is selected.',
+    )
+
     def __str__(self):
-        return self.product.product_name
+        label = f' [{self.color}]' if self.color else ''
+        return f'{self.product.product_name}{label}'
 
     class Meta:
         verbose_name = 'productgallery'
@@ -132,17 +144,17 @@ class ProductGallery(models.Model):
 
 
 class Shop(models.Model):
-    owner        = models.OneToOneField(
-                       settings.AUTH_USER_MODEL,
-                       on_delete=models.CASCADE,
-                       related_name='shop',
-                   )
-    name         = models.CharField(max_length=150)
-    slug         = models.SlugField(unique=True)
-    description  = models.TextField(blank=True)
-    logo         = models.ImageField(upload_to='shop_logos/', blank=True, null=True)
-    is_approved  = models.BooleanField(default=False)
-    created_at   = models.DateTimeField(auto_now_add=True)
+    owner = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='shop',
+    )
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='shop_logos/', blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
