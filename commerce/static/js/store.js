@@ -68,3 +68,35 @@ function removeFilter(key, val) {
   }
   window.location.search = params.toString();
 }
+
+(function applyFilterDotColors() {
+  const COLOR_MAP = {
+    'black':      '#1c1c1c',
+    'white':      '#f5f5f5',
+    'grey':       '#9ca3af',
+    'gray':       '#9ca3af',
+    'navy blue':  '#1e3a5f',
+    'navy':       '#1e3a5f',
+    'blue':       '#2563eb',
+    'red':        '#dc2626',
+    'maroon':     '#7f1d1d',
+    'pink':       '#ec4899',
+    'purple':     '#7c3aed',
+    'green':      '#16a34a',
+    'olive':      '#5c6b2f',
+    'yellow':     '#facc15',
+    'mustard':    '#d4a017',
+    'orange':     '#f97316',
+    'brown':      '#78350f',
+    'beige':      '#d8c4a0',
+    'khaki':      '#bdb76b',
+    'multicolor': 'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)',
+    'multi':      'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)',
+  };
+
+  document.querySelectorAll('.filter-color-dot').forEach(dot => {
+    const name = (dot.dataset.value || '').toLowerCase().trim();
+    const bg   = COLOR_MAP[name];
+    if (bg) dot.style.background = bg;
+  });
+})();

@@ -71,7 +71,11 @@
               <tr>
                 <td>
                   <div class="itemside">
-                    <img src="{{ cart_item.product.Image.url }}" class="img-sm">
+                    {% if cart_item.variant %}
+                      <img src="{{ cart_item.variant.get_image.url }}" class="img-sm">
+                    {% else %}
+                      <img src="{{ cart_item.product.Image.url }}" class="img-sm">
+                    {% endif %}
                     <div>
                       <a href="{{ cart_item.product.get_url }}" class="itemside-name" style="font-family:var(--font-display);font-size:1rem;font-weight:400;color:var(--text-dark);display:block;letter-spacing:0.02em;">{{ cart_item.product.product_name }}</a>
                       {% if cart_item.variant %}

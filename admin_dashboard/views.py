@@ -42,7 +42,6 @@ def is_super_admin(user):
     return user.is_authenticated and getattr(user, 'is_super_admin', False)
 
 def role_required(*roles):
-    """Decorator factory — usage: @role_required('super_admin', 'shop_owner')"""
     def check(user):
         return user.is_authenticated and user.role in roles
     return user_passes_test(check, login_url='admin_login')

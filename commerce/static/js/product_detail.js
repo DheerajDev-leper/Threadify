@@ -1,25 +1,3 @@
-/**
- * product_detail.js
- *
- * Handles the variant picker on the product detail page:
- *   - Auto-selects the cheapest size (and its color) on page load
- *   - Updates the displayed price live whenever size or color changes
- *   - Disables size pills that have no active variant for the chosen color
- *   - Shows an out-of-stock notice when the chosen combination has stock === 0
- *   - Writes the correct variant_id into the hidden form field before add-to-cart
- *   - Switches gallery images when a color is selected
- *
- * Called from the inline <script> at the bottom of product_detail.html:
- *   initializeProductDetail(defaultPrice, variantsJson, defaultSize, galleryByColor, defaultImageUrl)
- *
- * variantsJson shape (array):
- *   [{ id, color, size, price, stock }, ...]
- *
- * galleryByColor shape (object):
- *   { "Blue": ["url1", "url2"], "Gray": ["url3"], "": ["url4"] }
- *   Key "" = untagged images shown for every color.
- */
-
 'use strict';
 
 function initializeProductDetail(defaultPrice, variants, defaultSize, galleryByColor, defaultImageUrl) {
@@ -29,52 +7,20 @@ function initializeProductDetail(defaultPrice, variants, defaultSize, galleryByC
   const variantInput = document.getElementById('variantIdInput');
   const stockNotice  = document.getElementById('variantStockNotice');
   const addCartBtn   = document.getElementById('addCartBtn');
-  const sizeLabel    = document.getElementById('sizeLabel');
-  const colorLabel   = document.getElementById('colorLabel');
+  const comboWrap    = document.getElementById('variantCombos');
 
   /* ── State ───────────────────────────────────────────────── */
-  let selectedSize  = null;
-  let selectedColor = null;
+  let selectedVariantId = null;
 
-  /* ── Price helpers ───────────────────────────────────────── */
+  /* ── Helpers ─────────────────────────────────────────────── */
 
   function formatPrice(amount) {
     return 'Rs' + Math.round(amount).toLocaleString('en-IN');
   }
 
-  function findVariant(size, color) {
-    if (!size) return null;
-    if (color) {
-      const exact = variants.find(v => v.size === size && v.color === color);
-      if (exact) return exact;
-    }
-    const bySizeCandidates = variants.filter(v => v.size === size);
-    if (!bySizeCandidates.length) return null;
-    return bySizeCandidates.reduce(
-      (best, v) => (v.price < best.price ? v : best),
-      bySizeCandidates[0]
-    );
-  }
-
-  function applyVariant(variant) {
-    if (!variant) {
-      if (priceEl) priceEl.textContent = formatPrice(defaultPrice);
-      if (variantInput) variantInput.value = '';
-      setStockNotice(null);
-      return;
-    }
-    if (priceEl) {
-      priceEl.classList.add('price-updating');
-      priceEl.textContent = formatPrice(variant.price);
-      setTimeout(() => priceEl.classList.remove('price-updating'), 300);
-    }
-    if (variantInput) variantInput.value = variant.id;
-    setStockNotice(variant.stock);
-  }
-
   function setStockNotice(stock) {
     if (!stockNotice) return;
-    if (stock === null) {
+    if (stock === null || stock === undefined) {
       stockNotice.style.display = 'none';
       if (addCartBtn) addCartBtn.disabled = false;
       return;
@@ -95,31 +41,104 @@ function initializeProductDetail(defaultPrice, variants, defaultSize, galleryByC
     }
   }
 
-  function refreshPillStates() {
-    document.querySelectorAll('.size-pill').forEach(pill => {
-      const size = pill.dataset.value;
-      const available = selectedColor
-        ? variants.some(v => v.size === size && v.color === selectedColor)
-        : variants.some(v => v.size === size);
-      pill.classList.toggle('unavailable', !available);
-    });
+  /* ── Build combo cards ───────────────────────────────────── */
 
-    document.querySelectorAll('.color-swatch').forEach(swatch => {
-      const color = swatch.dataset.value;
-      const available = selectedSize
-        ? variants.some(v => v.color === color && v.size === selectedSize)
-        : variants.some(v => v.color === color);
-      swatch.classList.toggle('unavailable', !available);
+  const COLOR_MAP = {
+    'black':      '#1c1c1c',
+    'white':      '#f5f5f5',
+    'grey':       '#9ca3af',
+    'gray':       '#9ca3af',
+    'navy blue':  '#1e3a5f',
+    'navy':       '#1e3a5f',
+    'blue':       '#2563eb',
+    'red':        '#dc2626',
+    'maroon':     '#7f1d1d',
+    'pink':       '#ec4899',
+    'purple':     '#7c3aed',
+    'green':      '#16a34a',
+    'olive':      '#5c6b2f',
+    'yellow':     '#facc15',
+    'mustard':    '#d4a017',
+    'orange':     '#f97316',
+    'brown':      '#78350f',
+    'beige':      '#d8c4a0',
+    'khaki':      '#bdb76b',
+    'multicolor': 'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)',
+    'multi':      'linear-gradient(135deg,#ef4444,#facc15,#22c55e,#3b82f6)',
+  };
+
+  function buildCombos() {
+    if (!comboWrap || !variants || !variants.length) return;
+
+    comboWrap.innerHTML = '';
+
+    variants.forEach(v => {
+      const card = document.createElement('div');
+      card.className = 'variant-combo-card';
+      card.dataset.variantId = v.id;
+      card.dataset.color     = v.color;
+      card.dataset.size      = v.size;
+
+      if (v.stock === 0) card.classList.add('out-of-stock');
+
+      // Colour dot
+      const dot = document.createElement('span');
+      dot.className = 'combo-color-dot';
+      const bg = COLOR_MAP[(v.color || '').toLowerCase().trim()];
+      if (bg) dot.style.background = bg;
+
+      // Label  "Navy Blue · L"
+      const label = document.createElement('span');
+      label.className = 'combo-label';
+      const parts = [];
+      if (v.color) parts.push(v.color);
+      if (v.size)  parts.push(v.size);
+      label.textContent = parts.join(' · ');
+
+      // Price
+      const price = document.createElement('span');
+      price.className = 'combo-price';
+      price.textContent = formatPrice(v.price);
+
+      card.appendChild(dot);
+      card.appendChild(label);
+      card.appendChild(price);
+
+      if (v.stock === 0) {
+        const oos = document.createElement('span');
+        oos.className = 'combo-oos-badge';
+        oos.textContent = 'Out of stock';
+        card.appendChild(oos);
+      }
+
+      card.addEventListener('click', () => {
+        if (v.stock === 0) return;
+        selectVariantCard(card, v);
+      });
+
+      comboWrap.appendChild(card);
     });
+  }
+
+  function selectVariantCard(card, v) {
+    document.querySelectorAll('.variant-combo-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+
+    selectedVariantId = v.id;
+    if (variantInput) variantInput.value = v.id;
+
+    if (priceEl) {
+      priceEl.classList.add('price-updating');
+      priceEl.textContent = formatPrice(v.price);
+      setTimeout(() => priceEl.classList.remove('price-updating'), 300);
+    }
+
+    setStockNotice(v.stock);
+    switchGallery(v.color);
   }
 
   /* ── Gallery switching ───────────────────────────────────── */
 
-  /**
-   * Attach click handlers to all .thumb-link elements.
-   * Called once on init (for server-rendered thumbs) and again
-   * after switchGallery rebuilds the thumbnail list.
-   */
   function attachThumbHandlers() {
     document.querySelectorAll('.thumb-link').forEach(link => {
       link.addEventListener('click', function (e) {
@@ -129,7 +148,6 @@ function initializeProductDetail(defaultPrice, variants, defaultSize, galleryByC
           mainImg.style.opacity = '0.5';
           mainImg.src = this.getAttribute('href');
           mainImg.onload = () => { mainImg.style.opacity = '1'; };
-          // Fallback in case onload doesn't fire (cached image)
           setTimeout(() => { mainImg.style.opacity = '1'; }, 200);
         }
         document.querySelectorAll('.gallery-thumbs img').forEach(img => img.classList.remove('active'));
@@ -138,37 +156,22 @@ function initializeProductDetail(defaultPrice, variants, defaultSize, galleryByC
     });
   }
 
-  /**
-   * Rebuild the main image and thumbnail strip for the given color.
-   *
-   * Image priority:
-   *   1. Gallery images tagged to this color
-   *   2. Gallery images with no color tag (shown for all colors)
-   *   3. If nothing at all, fall back to product cover image
-   */
   function switchGallery(color) {
     const mainImg    = document.getElementById('mainImg');
     const thumbsList = document.querySelector('.gallery-thumbs');
     if (!thumbsList || !galleryByColor) return;
 
-    // Build ordered image list
     let images = [];
-
     if (color && galleryByColor[color] && galleryByColor[color].length) {
       images = images.concat(galleryByColor[color]);
     }
-
-    // Untagged images always appear alongside any color
     if (galleryByColor[''] && galleryByColor[''].length) {
       images = images.concat(galleryByColor['']);
     }
-
-    // If still empty (no gallery images at all), fall back to all gallery images
     if (images.length === 0) {
       Object.values(galleryByColor).forEach(urls => { images = images.concat(urls); });
     }
 
-    // Fade-swap main image
     if (mainImg) {
       const nextSrc = images.length > 0 ? images[0] : defaultImageUrl;
       mainImg.style.transition = 'opacity 0.18s ease';
@@ -179,91 +182,46 @@ function initializeProductDetail(defaultPrice, variants, defaultSize, galleryByC
       }, 120);
     }
 
-    // Rebuild thumbnail list
     thumbsList.innerHTML = '';
     const thumbImages = images.length > 0 ? images : [defaultImageUrl];
-
     thumbImages.forEach((url, i) => {
       const li  = document.createElement('li');
       const a   = document.createElement('a');
       a.href    = url;
       a.className = 'thumb-link';
-
       const img = document.createElement('img');
       img.src   = url;
       img.alt   = 'Product image ' + (i + 1);
       if (i === 0) img.classList.add('active');
-
       a.appendChild(img);
       li.appendChild(a);
       thumbsList.appendChild(li);
     });
 
-    // Re-attach click handlers now that the DOM has been rebuilt
     attachThumbHandlers();
   }
 
-  /* ── Public selection handlers (called by onclick in template) ── */
+  /* ── Init ────────────────────────────────────────────────── */
 
-  window.selectSize = function (el) {
-    document.querySelectorAll('.size-pill').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-
-    selectedSize = el.dataset.value;
-    if (sizeLabel) sizeLabel.textContent = selectedSize;
-
-    refreshPillStates();
-
-    const variant = findVariant(selectedSize, selectedColor);
-    if (selectedColor && !variant) clearColor();
-
-    applyVariant(findVariant(selectedSize, selectedColor));
-  };
-
-  window.selectColor = function (el) {
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-    el.classList.add('active');
-
-    selectedColor = el.dataset.value;
-    if (colorLabel) colorLabel.textContent = selectedColor;
-
-    refreshPillStates();
-    applyVariant(findVariant(selectedSize, selectedColor));
-
-    // ← Switch gallery images for this color
-    switchGallery(selectedColor);
-  };
-
-  function clearColor() {
-    selectedColor = null;
-    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-    if (colorLabel) colorLabel.textContent = '— select';
-  }
-
-  /* ── Attach handlers to server-rendered thumbnails on load ── */
   attachThumbHandlers();
+  buildCombos();
 
-  /* ── Auto-select on page load ────────────────────────────── */
+  // Auto-select cheapest in-stock variant (prefer defaultSize)
   (function autoSelect() {
     if (!variants || !variants.length) return;
 
-    let target = variants.find(v => v.size === defaultSize);
+    let target = variants.find(v => v.size === defaultSize && v.stock > 0);
     if (!target) {
-      target = variants.reduce((best, v) => (v.price < best.price ? v : best), variants[0]);
+      target = variants
+        .filter(v => v.stock > 0)
+        .reduce((best, v) => (!best || v.price < best.price ? v : best), null);
     }
-    if (!target) return;
+    if (!target) target = variants[0]; // fallback: first variant even if OOS
 
-    const sizePill = document.querySelector(
-      `.size-pill[data-value="${CSS.escape(target.size)}"]`
-    );
-    if (sizePill) sizePill.click();
+    const card = comboWrap
+      ? comboWrap.querySelector(`.variant-combo-card[data-variant-id="${target.id}"]`)
+      : null;
 
-    // Clicking the color swatch will automatically call switchGallery
-    if (target.color) {
-      const colorSwatch = document.querySelector(
-        `.color-swatch[data-value="${CSS.escape(target.color)}"]`
-      );
-      if (colorSwatch) colorSwatch.click();
-    }
+    if (card) selectVariantCard(card, target);
   })();
 }

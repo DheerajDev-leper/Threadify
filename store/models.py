@@ -69,10 +69,6 @@ class Product(models.Model):
 
 
 class ProductVariant(models.Model):
-    """
-    One purchasable colour/size combination for a product (e.g. "Red / XL"),
-    with its own stock count and optional price override.
-    """
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     color = models.CharField(max_length=100, blank=True)
     size = models.CharField(max_length=100, blank=True)
@@ -101,6 +97,16 @@ class ProductVariant(models.Model):
     @property
     def in_stock(self):
         return self.is_active and self.stock > 0
+    
+    @property
+    def get_image(self):
+        if self.color:
+            gallery = ProductGallery.objects.filter(
+                product=self.product, color=self.color
+            ).first()
+            if gallery:
+                return gallery.image
+        return self.product.Image
 
 
 class ReviewRating(models.Model):
@@ -122,10 +128,6 @@ class ProductGallery(models.Model):
     product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='store/products', max_length=255)
 
-    # ── NEW: tag this image to a specific colour variant ──────────────────
-    # Leave blank → image appears for every colour (useful for lifestyle/
-    # packaging shots that aren't colour-specific).
-    # Set to e.g. "Blue" → image only shows when Blue is selected.
     color = models.CharField(
         max_length=100,
         blank=True,

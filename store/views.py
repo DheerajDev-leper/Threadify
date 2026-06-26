@@ -63,23 +63,24 @@ def store(request, category_slug=None):
     # ── Count before pagination ──────────────────────
     products_count = products.count()
 
+    # ── Available filter options scoped to current product set ──
+    # MUST be placed before pagination (products is still a queryset here)
+    available_sizes = ProductVariant.objects.filter(
+        is_active=True,
+        product__in=products            # ← scoped to category/filters
+    ).exclude(size='').values_list('size', flat=True).distinct().order_by('size')
+
+    available_colors = ProductVariant.objects.filter(
+        is_active=True,
+        product__in=products            # ← scoped to category/filters
+    ).exclude(color='').values_list('color', flat=True).distinct().order_by('color')
+
     # ── Pagination ───────────────────────────────────
     products = products.order_by('id')
     per_page = 3 if category_slug else 9
     paginator = Paginator(products, per_page)
     page = request.GET.get('page')
     paged_products = paginator.get_page(page)
-
-    # ── Available filter options (for the drawer) ────
-    available_sizes = ProductVariant.objects.filter(
-        is_active=True,
-        product__is_available=True
-    ).exclude(size='').values_list('size', flat=True).distinct().order_by('size')
-
-    available_colors = ProductVariant.objects.filter(
-        is_active=True,
-        product__is_available=True
-    ).exclude(color='').values_list('color', flat=True).distinct().order_by('color')
 
     context = {
         'products':         paged_products,
@@ -140,27 +141,23 @@ def product_detail(request, category_slug, product_slug):
     default_size  = first_variant.size if first_variant else None
 
     # ── Gallery grouped by colour ─────────────────────
-    # Shape:  { "Blue": ["/media/url1.jpg", ...], "": ["/media/url2.jpg"] }
-    # Key ""  → untagged images, shown alongside every colour.
     gallery_by_color = defaultdict(list)
     for img in product_gallery:
         gallery_by_color[img.color].append(img.image.url)
 
-    # Convert defaultdict → plain dict for json.dumps
     gallery_by_color_json = json.dumps(dict(gallery_by_color))
 
     context = {
-        'single_product':       single_product,
-        'in_cart':              in_cart,
-        'orderproduct':         orderproduct,
-        'reviews':              reviews,
-        'product_gallery':      product_gallery,
-        'colors':               single_product.available_colors(),
-        'sizes':                single_product.available_sizes(),
-        'variants_json':        variants_json,
-        'default_price':        default_price,
-        'default_size':         default_size,
-        # ← new
+        'single_product':        single_product,
+        'in_cart':               in_cart,
+        'orderproduct':          orderproduct,
+        'reviews':               reviews,
+        'product_gallery':       product_gallery,
+        'colors':                single_product.available_colors(),
+        'sizes':                 single_product.available_sizes(),
+        'variants_json':         variants_json,
+        'default_price':         default_price,
+        'default_size':          default_size,
         'gallery_by_color_json': gallery_by_color_json,
     }
     return render(request, 'product_detail.html', context)
@@ -169,22 +166,25 @@ def product_detail(request, category_slug, product_slug):
 def search(request):
     products = Product.objects.none()
     products_count = 0
-    if 'keyword' in request.GET:
-        keyword = request.GET['keyword']
-        if keyword:
-            products = Product.objects.order_by('-created_date').filter(
-                Q(description__icontains=keyword) |
-                Q(product_name__icontains=keyword)
-            ).annotate(min_variant_price=Min('variants__price'))
-            products_count = products.count()
+    keyword = request.GET.get('keyword', '')
 
+    if keyword:
+        products = Product.objects.order_by('-created_date').filter(
+            Q(description__icontains=keyword) |
+            Q(product_name__icontains=keyword)
+        ).annotate(min_variant_price=Min('variants__price'))
+        products_count = products.count()
+
+    # ── Scoped to matched products only ──────────────
     available_sizes = ProductVariant.objects.filter(
-        is_active=True
-    ).exclude(size='').values_list('size', flat=True).distinct()
+        is_active=True,
+        product__in=products            # ← scoped to search results
+    ).exclude(size='').values_list('size', flat=True).distinct().order_by('size')
 
     available_colors = ProductVariant.objects.filter(
-        is_active=True
-    ).exclude(color='').values_list('color', flat=True).distinct()
+        is_active=True,
+        product__in=products            # ← scoped to search results
+    ).exclude(color='').values_list('color', flat=True).distinct().order_by('color')
 
     context = {
         'products':         products,
@@ -228,22 +228,27 @@ def submit_review(request, product_id):
 
 def seller_store(request, shop_slug):
     shop = Shop.objects.get(slug=shop_slug)
-    products = Product.objects.filter(shop=shop, is_available=True).order_by('id').annotate(
-        min_variant_price=Min('variants__price')
-    )
+    products = Product.objects.filter(
+        shop=shop, is_available=True
+    ).annotate(min_variant_price=Min('variants__price'))
 
     products_count = products.count()
-    paginator = Paginator(products, 9)
-    page = request.GET.get('page')
-    paged_products = paginator.get_page(page)
 
+    # ── Available filter options scoped to this shop's products ──
+    # MUST be placed before pagination (products is still a queryset here)
     available_sizes = ProductVariant.objects.filter(
-        is_active=True, product__shop=shop
-    ).exclude(size='').values_list('size', flat=True).distinct()
+        is_active=True,
+        product__in=products            # ← scoped to this seller's products
+    ).exclude(size='').values_list('size', flat=True).distinct().order_by('size')
 
     available_colors = ProductVariant.objects.filter(
-        is_active=True, product__shop=shop
-    ).exclude(color='').values_list('color', flat=True).distinct()
+        is_active=True,
+        product__in=products            # ← scoped to this seller's products
+    ).exclude(color='').values_list('color', flat=True).distinct().order_by('color')
+
+    paginator = Paginator(products.order_by('id'), 9)
+    page = request.GET.get('page')
+    paged_products = paginator.get_page(page)
 
     context = {
         'shop':             shop,

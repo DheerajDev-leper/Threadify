@@ -107,7 +107,7 @@ def payments(request):
 
     if payment_method == 'COD':
         trans_id = 'COD'
-        status = 'COMPLETED'
+        status = 'TO BE COLLECTED CASH'
     else:
         # Verify Razorpay signature
         razorpay_payment_id = body.get('razorpay_payment_id', '')

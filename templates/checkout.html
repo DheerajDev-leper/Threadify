@@ -86,7 +86,11 @@
           <div class="order-panel-title">Your Order</div>
           {% for item in cart_items %}
           <div class="order-item">
-            <img src="{{ item.product.Image.url }}" alt="{{ item.product.product_name }}">
+            {% if item.variant %}
+              <img src="{{ item.variant.get_image.url }}" class="img-sm">
+            {% else %}
+              <img src="{{ item.product.Image.url }}" class="img-sm">
+            {% endif %}
             <div style="flex:1;min-width:0;">
               <div class="order-item-name">{{ item.product.product_name }}</div>
               {% if item.variant %}

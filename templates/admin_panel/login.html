@@ -5,588 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In — StyleAdmin</title>
   {% load static %}
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <style>
-    /* ── Tokens (mirrors admin.css) ─────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    a { color: inherit; text-decoration: none; }
-    svg { display: block; flex-shrink: 0; }
-
-    :root {
-      --bg:              #080a0f;
-      --surface:         #111318;
-      --surface-2:       #181c25;
-      --surface-3:       #1e2330;
-      --border:          rgba(255,255,255,0.06);
-      --border-2:        rgba(255,255,255,0.10);
-      --text:            #edf0f7;
-      --text-dim:        #8b95a8;
-      --text-muted:      #4e5668;
-      --purple:          #7c5cfc;
-      --purple-light:    #9d80ff;
-      --purple-dim:      rgba(124,92,252,0.12);
-      --purple-glow:     rgba(124,92,252,0.28);
-      --red:             #ef4444;
-      --red-dim:         rgba(239,68,68,0.12);
-      --green:           #22c55e;
-      --green-dim:       rgba(34,197,94,0.12);
-      --radius-sm:       7px;
-      --radius:          10px;
-      --radius-lg:       14px;
-      --transition:      0.18s ease;
-    }
-
-    html { font-size: 15px; height: 100%; }
-
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .login-left {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 36px 44px;
-      overflow: hidden;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-    }
-
-    .login-left::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(124,92,252,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,92,252,0.06) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-    }
-
-    .login-left::after {
-      content: '';
-      position: absolute;
-      width: 420px;
-      height: 420px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(124,92,252,0.18) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .left-brand {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .left-brand-icon {
-      width: 34px; height: 34px;
-      border-radius: var(--radius-sm);
-      background: var(--purple-dim);
-      border: 1px solid rgba(124,92,252,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      color: var(--purple-light);
-      box-shadow: 0 0 16px rgba(124,92,252,0.2);
-    }
-
-    .left-brand-name {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 17px;
-      letter-spacing: -0.4px;
-      background: linear-gradient(135deg, #fff 0%, var(--purple-light) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .left-showcase {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 32px;
-    }
-
-    .left-eyebrow {
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--purple-light);
-      opacity: 0.7;
-    }
-
-    .left-headline {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: clamp(28px, 3.5vw, 40px);
-      line-height: 1.1;
-      letter-spacing: -1px;
-      color: var(--text);
-      max-width: 380px;
-    }
-
-    .left-headline em {
-      font-style: normal;
-      background: linear-gradient(135deg, var(--purple-light) 0%, #c084fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .left-metrics {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .metric-chip {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 10px 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border-2);
-      border-radius: var(--radius);
-      backdrop-filter: blur(8px);
-      min-width: 90px;
-    }
-
-    .metric-chip-value {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.5px;
-      line-height: 1;
-    }
-
-    .metric-chip-label {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      font-weight: 500;
-      letter-spacing: 0.03em;
-    }
-
-    .left-activity {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      width: 100%;
-    }
-
-    .activity-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      background: rgba(255,255,255,0.025);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      backdrop-filter: blur(8px);
-      animation: slideIn 0.4s ease both;
-    }
-
-    .activity-item:nth-child(1) { animation-delay: 0.1s; }
-    .activity-item:nth-child(2) { animation-delay: 0.2s; }
-    .activity-item:nth-child(3) { animation-delay: 0.3s; }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-12px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-
-    .activity-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .activity-dot-green  { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.6); }
-    .activity-dot-purple { background: var(--purple); box-shadow: 0 0 6px rgba(124,92,252,0.6); }
-    .activity-dot-blue   { background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.6); }
-
-    .activity-text {
-      flex: 1;
-      font-size: 12px;
-      color: var(--text-dim);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .activity-text strong { color: var(--text); font-weight: 600; }
-
-    .activity-time {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      flex-shrink: 0;
-    }
-
-    .left-footer {
-      position: relative;
-      z-index: 1;
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    /* ── Right panel ── */
-    .login-right {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 40px;
-      background: var(--bg);
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 380px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .login-header { margin-bottom: 32px; }
-
-    .login-title {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 26px;
-      letter-spacing: -0.6px;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-
-    .login-subtitle {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    .login-messages {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .login-alert {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 13px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .login-alert-error {
-      background: var(--red-dim);
-      border: 1px solid rgba(239,68,68,0.2);
-      color: #f87171;
-    }
-
-    .login-alert-success {
-      background: var(--green-dim);
-      border: 1px solid rgba(34,197,94,0.2);
-      color: #4ade80;
-    }
-
-    .login-alert svg { flex-shrink: 0; }
-
-    .login-form { display: flex; flex-direction: column; gap: 16px; }
-
-    .field-group { display: flex; flex-direction: column; gap: 6px; }
-
-    .field-label {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--text-dim);
-      letter-spacing: 0.01em;
-    }
-
-    .field-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .field-icon {
-      position: absolute;
-      left: 11px;
-      color: var(--text-muted);
-      pointer-events: none;
-      transition: color var(--transition);
-    }
-
-    .field-input {
-      width: 100%;
-      background: var(--surface-2);
-      border: 1px solid var(--border-2);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-size: 13.5px;
-      font-weight: 400;
-      padding: 9px 11px 9px 36px;
-      line-height: 1.45;
-      outline: none;
-      appearance: none;
-      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
-    }
-
-    .field-input::placeholder { color: var(--text-muted); }
-
-    .field-input:hover {
-      border-color: rgba(255,255,255,0.14);
-      background: var(--surface-3);
-    }
-
-    .field-input:focus {
-      border-color: rgba(124,92,252,0.55);
-      box-shadow: 0 0 0 3px rgba(124,92,252,0.12);
-      background: var(--surface-3);
-    }
-
-    .field-wrap:focus-within .field-icon { color: var(--purple-light); }
-
-    .field-toggle {
-      position: absolute;
-      right: 10px;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-      transition: color var(--transition);
-      display: flex; align-items: center;
-    }
-
-    .field-toggle:hover { color: var(--text); }
-
-    .form-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .remember-label {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 12.5px;
-      color: var(--text-dim);
-    }
-
-    .remember-checkbox {
-      width: 14px; height: 14px;
-      accent-color: var(--purple);
-      cursor: pointer;
-    }
-
-    .forgot-link {
-      font-size: 12.5px;
-      color: var(--purple-light);
-      font-weight: 500;
-      opacity: 0.75;
-      transition: opacity var(--transition);
-    }
-
-    .forgot-link:hover { opacity: 1; }
-
-    .login-btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 11px 20px;
-      background: var(--purple);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(124,92,252,0.35);
-      transition: all var(--transition);
-      position: relative;
-      overflow: hidden;
-      margin-top: 6px;
-    }
-
-    .login-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
-      transform: translateX(-100%);
-      transition: transform 0.5s ease;
-    }
-
-    .login-btn:hover {
-      background: var(--purple-light);
-      box-shadow: 0 6px 28px rgba(124,92,252,0.5);
-      transform: translateY(-1px);
-    }
-
-    .login-btn:hover::before { transform: translateX(100%); }
-    .login-btn:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(124,92,252,0.3); }
-
-    .login-btn-spinner {
-      display: none;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .login-btn.loading .login-btn-text { display: none; }
-    .login-btn.loading .login-btn-spinner { display: block; }
-
-    /* ── Divider ── */
-    .login-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .login-divider-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .login-divider-text {
-      font-size: 11px;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    /* ── Register CTA ── */
-    .register-btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: transparent;
-      color: var(--text-dim);
-      border: 1px solid var(--border-2);
-      border-radius: var(--radius-sm);
-      font-size: 13.5px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: all var(--transition);
-      text-decoration: none;
-    }
-
-    .register-btn:hover {
-      border-color: rgba(124,92,252,0.4);
-      color: var(--text);
-      background: var(--purple-dim);
-    }
-
-    .register-btn svg { color: var(--purple-light); }
-
-    /* ── Footer ── */
-    .login-footer {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .login-footer-brand {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 16px;
-      opacity: 0.4;
-    }
-
-    .login-footer-brand span {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    ::-webkit-scrollbar              { width: 5px; }
-    ::-webkit-scrollbar-track        { background: transparent; }
-    ::-webkit-scrollbar-thumb        { background: var(--surface-3); border-radius: 99px; }
-
-    @media (max-width: 900px) {
-      body { grid-template-columns: 1fr; }
-      .login-left { display: none; }
-      .login-right { min-height: 100vh; }
-    }
-
-    @media (max-width: 480px) {
-      .login-right { padding: 32px 20px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-    }
-
-    .field-error-msg {
-      font-size: 11.5px;
-      color: #f87171;
-      margin-top: 2px;
-      display: block;
-    }
-  </style>
 </head>
-<body>
+<body class="auth-body">
 
   <!-- ── Left panel ── -->
-  <div class="login-left">
-    <div class="left-brand">
-      <div class="left-brand-icon">✦</div>
-      <span class="left-brand-name">StyleAdmin</span>
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-brand-icon">✦</div>
+      <span class="auth-brand-name">StyleAdmin</span>
     </div>
 
-    <div class="left-showcase">
-      <span class="left-eyebrow">Command Centre</span>
-      <h1 class="left-headline">
+    <div class="auth-showcase auth-showcase--wide">
+      <span class="auth-eyebrow">Command Centre</span>
+      <h1 class="auth-headline">
         Everything your store needs,<br/>
         <em>exactly where it should be.</em>
       </h1>
 
-      <div class="left-metrics">
+      <div class="auth-metrics">
         <div class="metric-chip">
           <span class="metric-chip-value">₹2.4L</span>
           <span class="metric-chip-label">This month</span>
@@ -601,7 +41,7 @@
         </div>
       </div>
 
-      <div class="left-activity">
+      <div class="auth-activity">
         <div class="activity-item">
           <span class="activity-dot activity-dot-green"></span>
           <span class="activity-text"><strong>Priya S.</strong> placed an order for ₹3,200</span>
@@ -620,25 +60,25 @@
       </div>
     </div>
 
-    <p class="left-footer">
+    <p class="auth-left-footer">
       Secured with end-to-end session encryption.<br/>
       Only authorised administrators may access this panel.
     </p>
   </div>
 
   <!-- ── Right panel ── -->
-  <div class="login-right">
-    <div class="login-card">
+  <div class="auth-right">
+    <div class="auth-card">
 
-      <div class="login-header">
-        <h2 class="login-title">Welcome back</h2>
-        <p class="login-subtitle">Sign in to your admin account to continue.</p>
+      <div class="auth-header auth-header--lg">
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-subtitle">Sign in to your admin account to continue.</p>
       </div>
 
       {% if messages %}
-      <div class="login-messages">
+      <div class="auth-messages">
         {% for message in messages %}
-        <div class="login-alert {% if 'error' in message.tags or 'warning' in message.tags %}login-alert-error{% else %}login-alert-success{% endif %}">
+        <div class="auth-alert {% if 'error' in message.tags or 'warning' in message.tags %}auth-alert-error{% else %}auth-alert-success{% endif %}">
           {% if 'error' in message.tags or 'warning' in message.tags %}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           {% else %}
@@ -651,9 +91,9 @@
       {% endif %}
 
       {% if form.non_field_errors %}
-      <div class="login-messages">
+      <div class="auth-messages">
         {% for error in form.non_field_errors %}
-        <div class="login-alert login-alert-error">
+        <div class="auth-alert auth-alert-error">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           {{ error }}
         </div>
@@ -661,8 +101,7 @@
       </div>
       {% endif %}
 
-      <!-- Sign in form -->
-      <form method="post" class="login-form" id="loginForm" novalidate>
+      <form method="post" class="auth-form" id="loginForm" novalidate>
         {% csrf_token %}
 
         <div class="field-group">
@@ -696,8 +135,7 @@
                    autocomplete="current-password" required />
             <button type="button" class="field-toggle" id="togglePassword" aria-label="Show password">
               <svg id="eyeShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
               </svg>
               <svg id="eyeHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15" style="display:none">
                 <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
@@ -711,7 +149,7 @@
           {% endif %}
         </div>
 
-        <div class="form-row">
+        <div class="auth-form-row">
           <label class="remember-label">
             <input type="checkbox" name="remember" class="remember-checkbox" />
             Keep me signed in
@@ -719,21 +157,19 @@
           <a href="{% url 'admin_forgot_password' %}" class="forgot-link">Forgot password?</a>
         </div>
 
-        <button type="submit" class="login-btn" id="loginBtn">
-          <span class="login-btn-text">Sign in to dashboard</span>
-          <div class="login-btn-spinner"></div>
+        <button type="submit" class="auth-btn" id="loginBtn">
+          <span class="auth-btn-text">Sign in to dashboard</span>
+          <div class="auth-btn-spinner"></div>
         </button>
       </form>
 
-      <!-- Divider -->
-      <div class="login-divider">
-        <div class="login-divider-line"></div>
-        <span class="login-divider-text">New to StyleAdmin?</span>
-        <div class="login-divider-line"></div>
+      <div class="auth-divider">
+        <div class="auth-divider-line"></div>
+        <span class="auth-divider-text">New to StyleAdmin?</span>
+        <div class="auth-divider-line"></div>
       </div>
 
-      <!-- Register shop button -->
-      <a href="{% url 'shop_register' %}" class="register-btn">
+      <a href="{% url 'shop_register' %}" class="auth-secondary-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15">
           <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
           <polyline points="9 22 9 12 15 12 15 22"/>
@@ -741,9 +177,9 @@
         Register your shop
       </a>
 
-      <div class="login-footer">
+      <div class="auth-footer">
         Access is restricted to authorised administrators only.
-        <div class="login-footer-brand">
+        <div class="auth-footer-brand">
           <span>✦ StyleAdmin &nbsp;·&nbsp; v2.0</span>
         </div>
       </div>
@@ -751,37 +187,8 @@
     </div>
   </div>
 
-  <script>
-    const toggle  = document.getElementById('togglePassword');
-    const pwField = document.getElementById('id_password');
-    const eyeShow = document.getElementById('eyeShow');
-    const eyeHide = document.getElementById('eyeHide');
-
-    if (toggle && pwField) {
-      toggle.addEventListener('click', function () {
-        const isPassword = pwField.type === 'password';
-        pwField.type = isPassword ? 'text' : 'password';
-        eyeShow.style.display = isPassword ? 'none' : 'block';
-        eyeHide.style.display = isPassword ? 'block' : 'none';
-        toggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-      });
-    }
-
-    const form     = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-
-    if (form && loginBtn) {
-      form.addEventListener('submit', function () {
-        loginBtn.classList.add('loading');
-        loginBtn.disabled = true;
-      });
-    }
-
-    document.querySelectorAll('.field-error').forEach(function (input) {
-      input.style.borderColor = 'rgba(239,68,68,0.5)';
-      input.style.boxShadow   = '0 0 0 3px rgba(239,68,68,0.1)';
-    });
-  </script>
+  <script src="{% static 'js/admin_auth.js' %}"></script>
+  <script>initLoginPage();</script>
 
 </body>
 </html>

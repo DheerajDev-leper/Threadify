@@ -30,7 +30,11 @@
           <div class="cart-row">
             <!-- Product -->
             <div class="d-flex align-items-center gap-3" style="gap:1.2rem;display:flex!important;">
-              <img src="{{ item.product.Image.url }}" class="img-sm">
+              {% if item.variant %}
+                <img src="{{ item.variant.get_image.url }}" class="img-sm">
+              {% else %}
+                <img src="{{ item.product.Image.url }}" class="img-sm">
+              {% endif %}
               <div>
                 <a href="{{ item.product.get_url }}" class="cart-product-name">{{ item.product.product_name }}</a>
                 {% if item.variant %}

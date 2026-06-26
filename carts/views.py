@@ -15,12 +15,6 @@ def _cart_id(request):
 
 
 def _resolve_variant(request, product):
-    """
-    Look up the ProductVariant the shopper selected on the product page
-    (a single combined colour+size combination), if any. Returns
-    (variant, error_message). error_message is None when the request
-    can proceed.
-    """
     variant_id = request.POST.get('variant_id') or request.GET.get('variant_id')
 
     if not variant_id:
