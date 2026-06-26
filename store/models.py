@@ -2,9 +2,10 @@ from django.db import models
 from django.db.models import Avg, Count
 from django.urls import reverse
 from category.models import Category
+from django.conf import settings
 from accounts.models import Account
 
-# Create your models here.
+
 class Product(models.Model):
     product_name = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(max_length=100, unique=True)
@@ -17,50 +18,96 @@ class Product(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 
+    shop = models.ForeignKey(
+        'Shop',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products',
+    )
+
     def get_url(self):
         return reverse('product_detail', args=[self.category.slug, self.slug])
 
     def __str__(self):
         return self.product_name
-    
+
     def averageReview(self):
         reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(average=Avg('rating'))
         avg = 0
         if reviews['average'] is not None:
             avg = float(reviews['average'])
         return avg
-    
+
     def countReview(self):
         reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(count=Count('id'))
         count = 0
         if reviews['count'] is not None:
             count = int(reviews['count'])
         return count
-    
-class VariationManager(models.Manager):
-    def colors(self):
-        return super(VariationManager, self).filter(variation_category='color', is_active=True)
 
-    def sizes(self):
-        return super(VariationManager, self).filter(variation_category='size', is_active=True)
-    
-variation_category_choices = (
-    ('color', 'color'),
-    ('size', 'size'),
-)
-    
-class Variation(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    variation_category = models.CharField(max_length=100, choices=variation_category_choices)
-    variation_value = models.CharField(max_length=100)
-    is_active = models.BooleanField(default=True)
-    created_date = models.DateTimeField(auto_now=True)
+    def has_variants(self):
+        return self.variants.exists()
+
+    def available_colors(self):
+        return (
+            self.variants.filter(is_active=True)
+            .exclude(color='')
+            .values_list('color', flat=True)
+            .distinct()
+            .order_by('color')
+        )
+
+    def available_sizes(self):
+        return (
+            self.variants.filter(is_active=True)
+            .exclude(size='')
+            .values_list('size', flat=True)
+            .distinct()
+            .order_by('size')
+        )
+
+
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
+    color = models.CharField(max_length=100, blank=True)
+    size = models.CharField(max_length=100, blank=True)
+    sku = models.CharField(max_length=64, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    stock = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now_add=True)
 
-    objects = VariationManager()
+    class Meta:
+        ordering = ['color', 'size']
+        unique_together = ('product', 'color', 'size')
 
     def __str__(self):
-        return self.variation_value
+        return f'{self.product.product_name} — {self.display_label}'
+
+    @property
+    def display_label(self):
+        parts = [p for p in (self.color, self.size) if p]
+        return ' / '.join(parts) if parts else 'Default'
+
+    @property
+    def effective_price(self):
+        return self.price if self.price is not None else self.product.price
+
+    @property
+    def in_stock(self):
+        return self.is_active and self.stock > 0
+    
+    @property
+    def get_image(self):
+        if self.color:
+            gallery = ProductGallery.objects.filter(
+                product=self.product, color=self.color
+            ).first()
+            if gallery:
+                return gallery.image
+        return self.product.Image
+
 
 class ReviewRating(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -75,14 +122,41 @@ class ReviewRating(models.Model):
 
     def __str__(self):
         return self.subject
-    
+
+
 class ProductGallery(models.Model):
     product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='store/products', max_length=255)
 
+    color = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        help_text='Leave blank to show for all colours, or enter a colour '
+                  'name to show only when that colour is selected.',
+    )
+
     def __str__(self):
-        return self.product.product_name
+        label = f' [{self.color}]' if self.color else ''
+        return f'{self.product.product_name}{label}'
 
     class Meta:
         verbose_name = 'productgallery'
         verbose_name_plural = 'product gallery'
+
+
+class Shop(models.Model):
+    owner = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='shop',
+    )
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='shop_logos/', blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name

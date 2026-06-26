@@ -1,0 +1,200 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Shop Owners{% endblock %}
+{% block page_title %}Shop Owners{% endblock %}
+
+{% block content %}
+
+<!-- Pending approvals banner -->
+{% with pending=shops|dictsort:"is_approved" %}
+{% for shop in shops %}{% if not shop.is_approved %}
+{% if forloop.first %}
+<div class="pending-banner">
+  <div class="pending-banner-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  </div>
+  <span>You have pending shop applications that need your review.</span>
+  <a href="#pending-section" class="pending-banner-link">Review now →</a>
+</div>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endwith %}
+
+<!-- Pending Applications -->
+<div id="pending-section">
+  <div class="section-header" style="margin-bottom:12px">
+    <h2 class="section-title">Pending Applications</h2>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Shop</th>
+          <th>Owner</th>
+          <th>Email</th>
+          <th>Applied</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shop in shops %}
+        {% if not shop.is_approved %}
+        <tr>
+          <td>
+            <div class="shop-cell">
+              {% if shop.logo %}
+              <img src="{{ shop.logo.url }}" alt="" class="product-thumb" />
+              {% else %}
+              <div class="product-thumb product-thumb-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              </div>
+              {% endif %}
+              <div>
+                <div class="fw-600">{{ shop.name }}</div>
+                {% if shop.description %}
+                <div class="text-muted" style="font-size:11.5px;margin-top:1px">{{ shop.description|truncatechars:50 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="admin-info" style="gap:8px">
+              <div class="admin-avatar" style="width:28px;height:28px;font-size:11px">
+                {{ shop.owner.first_name|first|upper }}
+              </div>
+              <span class="fw-500">{{ shop.owner.full_name }}</span>
+            </div>
+          </td>
+          <td class="text-muted">{{ shop.owner.email }}</td>
+          <td class="text-muted">{{ shop.created_at|date:"d M Y" }}</td>
+          <td>
+            <div class="action-group">
+              <a href="{% url 'admin_shop_approve' shop.pk %}"
+                 class="table-action table-action-success"
+                 onclick="return confirm('Approve {{ shop.name }}?')">
+                Approve
+              </a>
+              <a href="{% url 'admin_shop_reject' shop.pk %}"
+                 class="table-action table-action-danger">
+                Reject
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+        {% empty %}
+        {% endfor %}
+
+        {% with has_pending=False %}
+        {% for shop in shops %}{% if not shop.is_approved %}{% with has_pending=True %}{% endwith %}{% endif %}{% endfor %}
+        {% endwith %}
+
+        <!-- Empty state if no pending -->
+        {% regroup shops by is_approved as grouped %}
+        {% for group in grouped %}
+          {% if not group.grouper and not group.list %}
+          <tr><td colspan="5" class="empty-row">No pending applications 🎉</td></tr>
+          {% endif %}
+        {% endfor %}
+
+        {% if not shops %}
+        <tr><td colspan="5" class="empty-row">No pending applications 🎉</td></tr>
+        {% else %}
+          {% with found=0 %}
+          {% for shop in shops %}{% if not shop.is_approved %}{% with found=found|add:1 %}{% endwith %}{% endif %}{% endfor %}
+          {% endwith %}
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- All Approved Shops -->
+<div class="section-header" style="margin-bottom:12px">
+  <h2 class="section-title">Approved Shops</h2>
+  <span class="card-badge">
+    {% for shop in shops %}{% if shop.is_approved %}{% if forloop.last %}{{ forloop.counter }}{% endif %}{% endif %}{% endfor %}
+    active
+  </span>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Shop</th>
+        <th>Owner</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Products</th>
+        <th>Status</th>
+        <th>Joined</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for shop in shops %}
+      {% if shop.is_approved %}
+      <tr>
+        <td>
+          <div class="shop-cell">
+            {% if shop.logo %}
+            <img src="{{ shop.logo.url }}" alt="" class="product-thumb" />
+            {% else %}
+            <div class="product-thumb product-thumb-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+            </div>
+            {% endif %}
+            <div>
+              <div class="fw-600">{{ shop.name }}</div>
+              <code class="slug-code">{{ shop.slug }}</code>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="admin-info" style="gap:8px">
+            <div class="admin-avatar" style="width:28px;height:28px;font-size:11px">
+              {{ shop.owner.first_name|first|upper }}
+            </div>
+            <span class="fw-500">{{ shop.owner.full_name }}</span>
+          </div>
+        </td>
+        <td class="text-muted">{{ shop.owner.email }}</td>
+        <td class="text-muted">{{ shop.owner.phone_number|default:"—" }}</td>
+        <td>
+          <span class="badge badge-blue">{{ shop.products.count }}</span>
+        </td>
+        <td>
+          {% if shop.owner.is_active %}
+          <span class="status-dot status-dot-green">Active</span>
+          {% else %}
+          <span class="status-dot status-dot-red">Suspended</span>
+          {% endif %}
+        </td>
+        <td class="text-muted">{{ shop.owner.date_joined|date:"d M Y" }}</td>
+        <td>
+          <div class="action-group">
+            <a href="{% url 'admin_customer_toggle' shop.owner.pk %}"
+               class="table-action {% if shop.owner.is_active %}table-action-warning{% else %}table-action-success{% endif %}"
+               onclick="return confirm('{% if shop.owner.is_active %}Suspend{% else %}Reactivate{% endif %} {{ shop.name }}?')">
+              {% if shop.owner.is_active %}Suspend{% else %}Reactivate{% endif %}
+            </a>
+            <a href="{% url 'admin_shop_reject' shop.pk %}"
+               class="table-action table-action-danger">
+              Remove
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+      {% empty %}
+      <tr><td colspan="8" class="empty-row">No approved shops yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+
+{% block content %}
+<div class="section-header">
+  <div></div>
+  <a href="{% url 'admin_category_add' %}" class="btn btn-primary btn-sm">+ Add Category</a>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Category Name</th>
+        <th>Slug</th>
+        <th>Products</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cat in categories %}
+      <tr>
+        <td>
+          {% if cat.cat_image %}
+          <img src="{{ cat.cat_image.url }}" alt="{{ cat.category_name }}" class="product-thumb" />
+          {% else %}
+          <div class="product-thumb product-thumb-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+          </div>
+          {% endif %}
+        </td>
+        <td><span class="fw-600">{{ cat.category_name }}</span></td>
+        <td><code class="slug-code">{{ cat.slug }}</code></td>
+        <td><span class="badge badge-blue">{{ cat.product_count }}</span></td>
+        <td>
+          <div class="action-group">
+            <a href="{% url 'admin_category_edit' cat.pk %}" class="table-action">Edit</a>
+            <a href="{% url 'admin_category_delete' cat.pk %}" class="table-action table-action-danger">Delete</a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="empty-row">No categories yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

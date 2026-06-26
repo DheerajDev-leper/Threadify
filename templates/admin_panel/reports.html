@@ -1,0 +1,184 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+
+<!-- Range selector -->
+<div class="filter-bar" style="margin-bottom:24px">
+  <span class="form-label" style="margin:0;white-space:nowrap">Date range:</span>
+  <div class="range-tabs">
+    <a href="?range=7"   class="range-tab {% if range_days == 7 %}active{% endif %}">7 days</a>
+    <a href="?range=30"  class="range-tab {% if range_days == 30 %}active{% endif %}">30 days</a>
+    <a href="?range=90"  class="range-tab {% if range_days == 90 %}active{% endif %}">90 days</a>
+    <a href="?range=365" class="range-tab {% if range_days == 365 %}active{% endif %}">1 year</a>
+  </div>
+</div>
+
+<!-- KPI cards -->
+<div class="stats-grid" style="margin-bottom:24px">
+  <div class="stat-card stat-purple">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Revenue</div>
+      <div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div>
+      <div class="stat-sub">Last {{ range_days }} days</div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Orders</div>
+      <div class="stat-value">{{ total_orders }}</div>
+      <div class="stat-sub">Last {{ range_days }} days</div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Avg Order Value</div>
+      <div class="stat-value">₹{{ avg_order_val }}</div>
+      <div class="stat-sub">Per order</div>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="stat-body">
+      <div class="stat-label">Tax Collected</div>
+      <div class="stat-value">₹{{ total_tax|floatformat:0 }}</div>
+      <div class="stat-sub">Last {{ range_days }} days</div>
+    </div>
+  </div>
+</div>
+
+<!-- Revenue chart -->
+<div class="card" style="margin-bottom:16px">
+  <div class="card-header">
+    <h3 class="card-title">Daily Revenue</h3>
+    <span class="card-badge">Last {{ range_days }} days</span>
+  </div>
+  <canvas id="dailyRevenueChart" height="80"></canvas>
+</div>
+
+<!-- Bottom row: top products + categories + payments -->
+<div class="charts-row" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+
+  <!-- Top products -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Top Products</h3>
+      <span class="card-badge">by revenue</span>
+    </div>
+    <table class="table">
+      <thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead>
+      <tbody>
+        {% for p in top_products %}
+        <tr>
+          <td>{{ p.product__product_name }}</td>
+          <td><span class="badge badge-blue">{{ p.total_qty }}</span></td>
+          <td>₹{{ p.total_rev|floatformat:0 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="empty-row">No data.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Top categories -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Top Categories</h3>
+      <span class="card-badge">by revenue</span>
+    </div>
+    <table class="table">
+      <thead><tr><th>Category</th><th>Units</th><th>Revenue</th></tr></thead>
+      <tbody>
+        {% for c in top_categories %}
+        <tr>
+          <td>{{ c.product__category__category_name }}</td>
+          <td><span class="badge badge-blue">{{ c.total_qty }}</span></td>
+          <td>₹{{ c.total_rev|floatformat:0 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="empty-row">No data.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Payment methods -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Payment Methods</h3>
+  </div>
+  <table class="table">
+    <thead><tr><th>Method</th><th>Transactions</th><th>Total Amount</th></tr></thead>
+    <tbody>
+      {% for pm in payment_methods %}
+      <tr>
+        <td><span class="fw-600">{{ pm.payment_method }}</span></td>
+        <td><span class="badge badge-blue">{{ pm.count }}</span></td>
+        <td>₹{{ pm.total|floatformat:0 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="empty-row">No payment data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const dailyData = {{ daily_data|safe }};
+const labels  = dailyData.map(d => d.date);
+const revenues = dailyData.map(d => d.revenue);
+
+new Chart(document.getElementById('dailyRevenueChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: revenues,
+      borderColor: '#8b5cf6',
+      backgroundColor: 'rgba(139,92,246,0.12)',
+      tension: 0.4,
+      fill: true,
+      pointRadius: revenues.length <= 31 ? 4 : 2,
+      pointBackgroundColor: '#8b5cf6',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+      x: {
+        grid: { display: false },
+        ticks: {
+          color: '#94a3b8',
+          maxTicksLimit: 12,
+          maxRotation: 45,
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

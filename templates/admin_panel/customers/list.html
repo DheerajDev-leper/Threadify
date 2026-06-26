@@ -1,0 +1,83 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Customers{% endblock %}
+{% block page_title %}Customers{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+  <form method="get" class="filter-form">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" name="q" value="{{ query }}" placeholder="Name or email…" class="form-input search-input" />
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    {% if query %}
+    <a href="{% url 'admin_customer_list' %}" class="btn btn-ghost btn-sm">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Joined</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td>
+          <div class="admin-info" style="gap:10px">
+            <div class="admin-avatar" style="width:32px;height:32px;font-size:12px">
+              {{ customer.first_name|first|upper }}
+            </div>
+            <span class="fw-600">{{ customer.full_name }}</span>
+          </div>
+        </td>
+        <td class="text-muted">{{ customer.email }}</td>
+        <td class="text-muted">{{ customer.phone_number|default:"—" }}</td>
+        <td class="text-muted">{{ customer.date_joined|date:"d M Y" }}</td>
+        <td>
+          {% if customer.is_active %}
+          <span class="status-dot status-dot-green">Active</span>
+          {% else %}
+          <span class="status-dot status-dot-red">Inactive</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="action-group">
+            <a href="{% url 'admin_customer_detail' customer.pk %}" class="table-action">View</a>
+            <a href="{% url 'admin_customer_toggle' customer.pk %}"
+               class="table-action {% if customer.is_active %}table-action-warning{% else %}table-action-success{% endif %}"
+               onclick="return confirm('{% if customer.is_active %}Deactivate{% else %}Activate{% endif %} this account?')">
+              {% if customer.is_active %}Deactivate{% else %}Activate{% endif %}
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="empty-row">No customers found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if customers.has_other_pages %}
+  <div class="pagination">
+    {% if customers.has_previous %}
+    <a href="?page={{ customers.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-btn">← Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ customers.number }} of {{ customers.paginator.num_pages }}</span>
+    {% if customers.has_next %}
+    <a href="?page={{ customers.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="page-btn">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

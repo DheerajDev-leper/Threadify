@@ -1,36 +1,4 @@
-<style>
-.dashboard-sidebar-wrap{background:var(--charcoal);padding:2.5rem;}
-.sidebar-user-label{font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1.8rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.06);}
-.sidebar-nav-item{display:flex;align-items:center;gap:0.8rem;font-family:var(--font-body);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:0.9rem 0;border-bottom:1px solid rgba(255,255,255,0.04);text-decoration:none;transition:all var(--t-fast);}
-.sidebar-nav-item i{color:var(--gold);font-size:0.75rem;width:16px;text-align:center;opacity:0.6;transition:opacity var(--t-fast);}
-.sidebar-nav-item:hover{color:rgba(255,255,255,0.8);padding-left:8px;}
-.sidebar-nav-item:hover i{opacity:1;}
-.sidebar-nav-item.active{color:var(--gold);border-left:2px solid var(--gold);padding-left:0.5rem;}
-.sidebar-nav-item.active i{opacity:1;}
-.sidebar-nav-item:last-child{border-bottom:none;}
-.sidebar-logout{display:flex;align-items:center;gap:0.8rem;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:0.9rem 0;margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.06);text-decoration:none;transition:all var(--t-fast);}
-.sidebar-logout:hover{color:rgba(255,71,87,0.7);}
-.sidebar-logout i{font-size:0.75rem;}
 
-/* ── SIDEBAR RESPONSIVE ──────────────────────────────────────── */
-@media (max-width: 768px) {
-  /* Sidebar stacks above main content on mobile */
-  aside.col-md-3 { width: 100%; max-width: 100%; padding-bottom: 0; margin-bottom: 1.5rem; }
-  .dashboard-sidebar-wrap { padding: 1.5rem; }
-  /* Horizontal scrollable nav on small screens */
-  .dashboard-sidebar-wrap nav { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-  .sidebar-user-label { width: 100%; }
-  .sidebar-nav-item { border: 1px solid rgba(255,255,255,0.08); padding: 0.7rem 1rem; flex: 1 1 auto; min-width: 130px; justify-content: center; gap: 0.5rem; white-space: nowrap; }
-  .sidebar-nav-item:hover { padding-left: 1rem; }
-  .sidebar-nav-item.active { border-left: 2px solid var(--gold); padding-left: 1rem; }
-  .sidebar-logout { border-top: none; margin-top: 0; border: 1px solid rgba(255,71,87,0.2); padding: 0.7rem 1rem; flex: 1 1 auto; min-width: 120px; justify-content: center; }
-}
-
-@media (max-width: 576px) {
-  .sidebar-nav-item { font-size: 0.6rem; letter-spacing: 0.12em; min-width: 100px; }
-  .sidebar-logout { font-size: 0.6rem; letter-spacing: 0.12em; }
-}
-</style>
 
 <aside class="col-md-3">
   <div class="dashboard-sidebar-wrap">

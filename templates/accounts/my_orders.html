@@ -1,53 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<style>
-.dashboard-section{padding:5rem 0;background:var(--off-white);}
-.dash-page-header{background:var(--charcoal);padding:3.5rem 0;position:relative;overflow:hidden;}
-.dash-page-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(201,168,76,0.06),transparent 55%);}
-.dash-page-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;}
-.dash-eyebrow{font-size:0.58rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
-.dash-title{font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--cream);letter-spacing:0.04em;}
-.orders-card{background:var(--cream);border:1px solid var(--border-light);}
-.orders-header{padding:1.5rem 2.5rem;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;}
-.orders-header-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-light);}
-.orders-count-badge{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;background:var(--off-white);border:1px solid var(--border-light);color:var(--text-faint);padding:0.3rem 0.8rem;}
-/* Orders table */
-.orders-table{width:100%;border-collapse:collapse;}
-.orders-table thead tr{border-bottom:1px solid var(--border-mid);}
-.orders-table thead th{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-faint);padding:1rem 1.5rem;font-weight:400;text-align:left;}
-.orders-table tbody tr{border-bottom:1px solid var(--border-light);transition:background var(--t-fast);}
-.orders-table tbody tr:last-child{border-bottom:none;}
-.orders-table tbody tr:hover{background:var(--off-white);}
-.orders-table td{padding:1.4rem 1.5rem;font-size:0.82rem;color:var(--text-mid);letter-spacing:0.04em;vertical-align:middle;}
-.order-number-link{font-family:var(--font-body);font-size:0.72rem;letter-spacing:0.18em;color:var(--gold-dark);border-bottom:1px solid rgba(154,122,46,0.25);padding-bottom:1px;transition:all var(--t-fast);}
-.order-number-link:hover{color:var(--gold);border-bottom-color:var(--gold);}
-.order-amount{font-family:var(--font-display);font-size:1rem;font-weight:400;color:var(--text-dark);}
-.order-date{font-size:0.72rem;color:var(--text-faint);letter-spacing:0.08em;}
-/* Empty state */
-.orders-empty{padding:5rem 2rem;text-align:center;}
-.orders-empty i{font-size:3.5rem;color:var(--border-mid);display:block;margin-bottom:1.8rem;}
-.orders-empty h3{font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text-light);margin-bottom:1rem;}
-.orders-empty p{font-size:0.8rem;color:var(--text-faint);margin-bottom:2rem;letter-spacing:0.08em;}
 
-/* ── MY ORDERS RESPONSIVE ───────────────────────────────────── */
-@media (max-width: 768px) {
-  .dash-page-header { padding: 2.5rem 0; }
-  .dash-title { font-size: 2.2rem; }
-  .dashboard-section { padding: 2.5rem 0; }
-  .orders-header { padding: 1.2rem 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
-  /* Make table horizontally scrollable */
-  .orders-card { overflow-x: auto; }
-  .orders-table { min-width: 560px; }
-  .orders-table thead th, .orders-table td { padding: 0.9rem 1rem; }
-}
-
-@media (max-width: 576px) {
-  .dash-title { font-size: 1.9rem; }
-  .orders-empty { padding: 3rem 1rem; }
-  .orders-empty h3 { font-size: 1.7rem; }
-}
-</style>
 
 <div class="dash-page-header">
   <div class="container">

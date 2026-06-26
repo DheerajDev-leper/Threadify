@@ -29,8 +29,7 @@ def place_order(request, total=0, quantity=0):
     grand_total = 0
 
     for cart_item in cart_items:
-        variation_price = cart_item.variation.filter(price__isnull=False).values_list('price', flat=True).first()
-        unit_price = variation_price if variation_price else cart_item.product.price
+        unit_price = cart_item.variant.effective_price if cart_item.variant else cart_item.product.price
         total += unit_price * cart_item.quantity
         quantity += cart_item.quantity
 
@@ -108,7 +107,7 @@ def payments(request):
 
     if payment_method == 'COD':
         trans_id = 'COD'
-        status = 'COMPLETED'
+        status = 'TO BE COLLECTED CASH'
     else:
         # Verify Razorpay signature
         razorpay_payment_id = body.get('razorpay_payment_id', '')
@@ -142,23 +141,26 @@ def payments(request):
     cart_items = CartItem.objects.filter(user=request.user)
 
     for item in cart_items:
-        variation_price = item.variation.filter(price__isnull=False).values_list('price', flat=True).first()
-        unit_price = variation_price if variation_price else item.product.price
+        unit_price = item.variant.effective_price if item.variant else item.product.price
 
-        orderproduct = OrderProduct.objects.create(
+        OrderProduct.objects.create(
             order_id=order.id,
             payment=payment,
             user=request.user,
             product=item.product,
+            variant=item.variant,
             quantity=item.quantity,
             product_price=unit_price,
             ordered=True,
         )
-        orderproduct.variation.set(item.variation.all())
 
-        product = item.product
-        product.stock -= item.quantity
-        product.save()
+        if item.variant:
+            item.variant.stock = max(0, item.variant.stock - item.quantity)
+            item.variant.save()
+        else:
+            product = item.product
+            product.stock -= item.quantity
+            product.save()
 
     cart_items.delete()
 

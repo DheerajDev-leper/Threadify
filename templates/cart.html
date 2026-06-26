@@ -1,67 +1,7 @@
 {%extends "base.html"%}
 {% load static %}
 {% block content %}
-<style>
-.cart-section{padding:5rem 0;}
-.page-eyebrow{font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
-.page-heading{font-family:var(--font-display);font-size:3rem;font-weight:300;color:var(--text-dark);margin-bottom:3rem;letter-spacing:0.04em;}
-.cart-empty-state{text-align:center;padding:6rem 2rem;}
-.cart-empty-state .empty-icon{font-size:4rem;color:var(--border-mid);margin-bottom:2rem;display:block;}
-.cart-empty-state h3{font-family:var(--font-display);font-size:2.2rem;font-weight:300;color:var(--text-light);margin-bottom:1rem;}
-.cart-empty-state p{font-size:0.82rem;color:var(--text-faint);margin-bottom:2rem;letter-spacing:0.06em;}
-.cart-card{background:var(--cream);border:1px solid var(--border-light);margin-bottom:1.5px;}
-.cart-card-header{padding:1rem 2rem;border-bottom:1px solid var(--border-light);font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-light);}
-.cart-table .thead-row{display:grid;grid-template-columns:2fr 1fr 1fr 100px;gap:1rem;padding:0.8rem 2rem;border-bottom:1px solid var(--border-mid);}
-.cart-table .thead-row span{font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-faint);}
-.cart-row{display:grid;grid-template-columns:2fr 1fr 1fr 100px;gap:1rem;padding:1.8rem 2rem;border-bottom:1px solid var(--border-light);align-items:center;transition:background var(--t-fast);}
-.cart-row:hover{background:var(--off-white);}
-.cart-row:last-child{border-bottom:none;}
-.cart-product-name{font-family:var(--font-display);font-size:1.1rem;font-weight:400;color:var(--text-dark);display:block;margin-bottom:0.3rem;letter-spacing:0.02em;}
-.cart-product-name:hover{color:var(--gold-dark);}
-.cart-variant-tag{display:inline-block;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);background:var(--off-white);border:1px solid var(--border-light);padding:0.2rem 0.5rem;margin-right:4px;}
-/* Summary card */
-.summary-card{background:var(--charcoal);border:none;padding:2.5rem;}
-.summary-card-title{font-size:0.62rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;}
-.summary-line{display:flex;justify-content:space-between;padding:0.8rem 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.8rem;color:rgba(255,255,255,0.5);letter-spacing:0.08em;}
-.summary-line:last-of-type{border:none;}
-.summary-total{font-family:var(--font-display);font-size:1.8rem;font-weight:300;color:var(--cream);display:flex;justify-content:space-between;align-items:baseline;padding:1.2rem 0;border-top:1px solid rgba(201,168,76,0.3);margin-top:0.5rem;}
-.summary-total span:last-child{color:var(--gold);}
-.summary-card .btn-primary{width:100%;margin-top:1.5rem;padding:1.1rem;}
-.summary-card .btn-light{width:100%;margin-top:0.8rem;border-color:rgba(255,255,255,0.15);color:rgba(255,255,255,0.5)!important;}
-.summary-card .btn-light:hover{border-color:var(--gold);color:var(--gold)!important;}
-.summary-secure{font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.2);text-align:center;margin-top:1.2rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
 
-/* ── CART RESPONSIVE ────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .cart-section { padding: 3rem 0; }
-  .page-heading { font-size: 2.2rem; margin-bottom: 2rem; }
-  .cart-empty-state { padding: 4rem 1rem; }
-  .cart-empty-state h3 { font-size: 1.8rem; }
-
-  /* Hide table headers on mobile */
-  .cart-table .thead-row { display: none; }
-
-  /* Stack cart rows vertically */
-  .cart-row {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 1.5rem;
-    position: relative;
-  }
-
-  .cart-card-header { padding: 0.8rem 1.5rem; }
-  .summary-card { padding: 1.8rem; }
-  .summary-total { font-size: 1.5rem; }
-}
-
-@media (max-width: 576px) {
-  .cart-section { padding: 2rem 0; }
-  .page-heading { font-size: 1.8rem; }
-  .cart-row { padding: 1.2rem 1rem; }
-  .cart-product-name { font-size: 0.95rem; }
-  .summary-card { padding: 1.4rem; }
-}
-</style>
 
 <div class="container cart-section">
   <div class="page-eyebrow">Your Selection</div>
@@ -90,13 +30,15 @@
           <div class="cart-row">
             <!-- Product -->
             <div class="d-flex align-items-center gap-3" style="gap:1.2rem;display:flex!important;">
-              <img src="{{ item.product.Image.url }}" class="img-sm">
+              {% if item.variant %}
+                <img src="{{ item.variant.get_image.url }}" class="img-sm">
+              {% else %}
+                <img src="{{ item.product.Image.url }}" class="img-sm">
+              {% endif %}
               <div>
                 <a href="{{ item.product.get_url }}" class="cart-product-name">{{ item.product.product_name }}</a>
-                {% if item.variation.all %}
-                  {% for v in item.variation.all %}
-                  <span class="cart-variant-tag">{{ v.variation_category|capfirst }}: {{ v.variation_value|capfirst }}</span>
-                  {% endfor %}
+                {% if item.variant %}
+                  <span class="cart-variant-tag">{{ item.variant.display_label }}</span>
                 {% endif %}
               </div>
             </div>
@@ -110,19 +52,19 @@
                 <div class="input-group-append">
                   <form action="{% url 'add_cart' item.product.id %}" method="POST" style="display:inline;">
                     {% csrf_token %}
-                    {% for v in item.variation.all %}
-                    <input type="hidden" name="{{ v.variation_category|lower }}" value="{{ v.variation_value|capfirst }}">
-                    {% endfor %}
+                    {% if item.variant %}<input type="hidden" name="variant_id" value="{{ item.variant.id }}">{% endif %}
                     <button type="submit" class="btn btn-light"><i class="fa fa-plus"></i></button>
                   </form>
                 </div>
               </div>
             </div>
             <!-- Price -->
-            <div>
-              <var class="price" style="font-size:1rem;">Rs{{ item.sub_total }}</var>
-              <small style="display:block;font-size:0.65rem;color:var(--text-faint);letter-spacing:0.08em;margin-top:2px;">Rs{{ item.product.price }} each</small>
-            </div>
+              <div>
+                <var class="price" style="font-size:1rem;">Rs{{ item.sub_total }}</var>
+                <small style="display:block;font-size:0.65rem;color:var(--text-faint);letter-spacing:0.08em;margin-top:2px;">
+                  Rs{% if item.variant %}{{ item.variant.effective_price }}{% else %}{{ item.product.price }}{% endif %} each
+                </small>
+              </div>
             <!-- Remove -->
             <div class="text-right">
               <a href="{% url 'clear_cart' item.product.id item.id %}" onclick="return confirm('Remove from selection?')" class="btn btn-danger">Remove</a>

@@ -1,71 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<style>
-.order-complete-section{padding:5rem 0 6rem;background:var(--cream);}
-.success-section{background:var(--charcoal);padding:5rem 0;position:relative;overflow:hidden;text-align:center;}
-.success-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(201,168,76,0.08),transparent 65%);}
-.success-section::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.4;}
-.success-icon-outer{width:100px;height:100px;margin:0 auto 2.5rem;position:relative;}
-.success-icon-ring{position:absolute;inset:0;border:1px solid rgba(201,168,76,0.3);border-radius:50%;animation:ringPulse 2s ease infinite;}
-.success-icon-ring:nth-child(2){inset:-12px;animation-delay:0.5s;opacity:0.4;}
-.success-icon-core{width:100px;height:100px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:var(--black);animation:successPop 0.7s var(--ease-luxury) 0.2s both;}
-@keyframes successPop{0%{opacity:0;transform:scale(0.6);}80%{transform:scale(1.05);}100%{opacity:1;transform:scale(1);}}
-@keyframes ringPulse{0%,100%{transform:scale(1);opacity:0.5;}50%{transform:scale(1.15);opacity:0.15;}}
-.success-heading{font-family:var(--font-display);font-size:3rem;font-weight:300;color:var(--cream);margin-bottom:0.8rem;animation:titleReveal 0.7s var(--ease-luxury) 0.5s both;}
-.success-sub{font-size:0.78rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:2rem;animation:titleReveal 0.7s var(--ease-luxury) 0.7s both;}
-.invoice-section{padding:5rem 0;}
-.invoice-wrap{max-width:780px;margin:0 auto;}
-.invoice-box{background:var(--cream);border:1px solid var(--border-light);}
-.invoice-header{background:var(--charcoal);padding:2.5rem 3rem;display:flex;justify-content:space-between;align-items:flex-start;position:relative;overflow:hidden;}
-.invoice-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.4;}
-.invoice-logo-area img{max-height:34px;filter:brightness(0) invert(1);opacity:0.7;}
-.invoice-logo-area .logo-text{font-family:var(--font-title);font-size:1rem;letter-spacing:0.35em;color:rgba(255,255,255,0.5);}
-.invoice-to{text-align:right;}
-.invoice-to-label{font-size:0.58rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;}
-.invoice-to-info{font-size:0.78rem;color:rgba(255,255,255,0.5);line-height:1.9;}
-.invoice-body{padding:3rem;}
-.invoice-meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border:1px solid var(--border-light);margin-bottom:2.5rem;}
-.invoice-meta-cell{padding:1rem 1.4rem;border-right:1px solid var(--border-light);border-bottom:1px solid var(--border-light);}
-.invoice-meta-cell:nth-child(even){border-right:none;}
-.invoice-meta-cell:nth-last-child(-n+2){border-bottom:none;}
-.invoice-meta-label{font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-faint);margin-bottom:0.3rem;}
-.invoice-meta-value{font-size:0.85rem;color:var(--text-dark);font-weight:400;letter-spacing:0.04em;}
-.status-badge{display:inline-block;background:rgba(107,143,94,0.12);color:#4a7a40;border:1px solid rgba(107,143,94,0.25);font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.3rem 0.7rem;}
-.invoice-table thead th{background:var(--charcoal);color:rgba(255,255,255,0.4);border:none;font-size:0.6rem;letter-spacing:0.2em;}
-.invoice-table td{color:var(--text-mid);font-size:0.82rem;border-top:1px solid var(--border-light);}
-.invoice-table tfoot th{font-size:0.78rem;letter-spacing:0.06em;border-top:1px solid var(--border-mid);background:transparent;color:var(--text-light);}
-.invoice-table tfoot tr:last-child th{color:var(--gold-dark);font-size:0.95rem;border-top:2px solid var(--gold);border-top-color:rgba(201,168,76,0.3);}
-.invoice-footer-note{text-align:center;padding:1.5rem 2rem;border-top:1px solid var(--border-light);background:var(--off-white);}
-.invoice-footer-note p{font-size:0.72rem;letter-spacing:0.15em;color:var(--text-faint);margin:0;font-family:var(--font-display);font-style:italic;font-size:1rem;font-weight:300;}
-.invoice-actions{display:flex;justify-content:center;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;}
 
-/* ── ORDER COMPLETE RESPONSIVE ──────────────────────────────── */
-@media (max-width: 768px) {
-  .success-section { padding: 3.5rem 0; }
-  .success-heading { font-size: 2.2rem; }
-  .invoice-section { padding: 3rem 0; }
-  .invoice-header { flex-direction: column; gap: 1.5rem; padding: 1.8rem 2rem; }
-  .invoice-to { text-align: left; }
-  .invoice-body { padding: 1.8rem; }
-  .invoice-meta-cell { padding: 0.8rem 1rem; }
-  .invoice-actions { flex-direction: column; align-items: center; }
-  .invoice-actions .btn { width: 100%; max-width: 300px; }
-}
-
-@media (max-width: 576px) {
-  .success-heading { font-size: 1.9rem; }
-  .success-icon-outer, .success-icon-core { width: 76px; height: 76px; }
-  .success-icon-core { font-size: 1.8rem; }
-  .invoice-body { padding: 1.4rem 1rem; }
-  .invoice-header { padding: 1.4rem 1rem; }
-  .invoice-meta-grid { grid-template-columns: 1fr; }
-  .invoice-meta-cell { border-right: none; }
-  .invoice-meta-cell:nth-last-child(-n+2) { border-bottom: 1px solid var(--border-light); }
-  .invoice-meta-cell:last-child { border-bottom: none; }
-  .table-responsive { overflow-x: auto; }
-}
-</style>
 
 <!-- Success Banner -->
 <section class="success-section">
@@ -138,11 +74,9 @@
             <tr>
               <td>
                 <strong style="font-family:var(--font-display);font-weight:400;font-size:1rem;color:var(--text-dark);">{{ item.product.product_name }}</strong>
-                {% if item.variation.all %}
+                {% if item.variant %}
                 <div style="margin-top:4px;">
-                  {% for variation in item.variation.all %}
-                  <span style="font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--border-light);padding:0.15rem 0.45rem;margin-right:3px;">{{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}</span>
-                  {% endfor %}
+                  <span style="font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--border-light);padding:0.15rem 0.45rem;margin-right:3px;">{{ item.variant.display_label }}</span>
                 </div>
                 {% endif %}
               </td>
