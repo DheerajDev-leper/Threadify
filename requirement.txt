@@ -2,3 +2,7 @@ Django>=4.2,<5.0
 dj-database-url>=2.1.0
 python-decouple>=3.8
 pytz>=2024.1
+psycopg2-binary
+Pillow
+django-admin-thumbnails
+requests
