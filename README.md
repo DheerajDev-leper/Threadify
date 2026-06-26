@@ -3,7 +3,7 @@
 A full-featured **Multi-Vendor Clothing E-Commerce Web Application** built with **Django**. Threadify provides a complete online shopping experience with secure authentication, product management, shopping cart, order processing, payment integration, and a dedicated admin dashboard for managing the platform.
 
 🔗 **GitHub Repository:**
-https://github.com/DheerajDev-leper/Clothing
+https://github.com/DheerajDev-leper/Threadify
 
 ---
 
