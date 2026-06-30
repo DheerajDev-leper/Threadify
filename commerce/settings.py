@@ -184,6 +184,3 @@ else:
     CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SAMESITE = 'None'
 
-
-# RAZORPAY_KEY_ID = 'rzp_test_SEsDPcqlgjvtJA'
-# RAZORPAY_KEY_SECRET = 'BqVXBn1pFj8rm7w8AeyQHAqu'

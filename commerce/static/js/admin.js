@@ -1,7 +1,4 @@
-/* ============================================================
-   StyleAdmin — admin_auth.js
-   Shared JS for login, shop_register, reset_password pages
-   ============================================================ */
+
 
 'use strict';
 

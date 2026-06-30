@@ -466,27 +466,6 @@
   transition:border-color 0.25s;
 }
 .variant-group select:focus{border-bottom-color:var(--gold);outline:none;}
-
-/* Color swatches */
-/* .color-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:0.5rem;}
-.color-swatch{
-  width:28px;height:28px;
-  border-radius:50%;
-  border:2px solid var(--border-light);
-  cursor:pointer;
-  transition:all 0.2s;
-  position:relative;
-}
-.color-swatch:hover{transform:scale(1.15);border-color:var(--gold);}
-.color-swatch.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.25);}
-.color-swatch::after{
-  content:'✓';
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.7rem;color:#fff;
-  opacity:0;transition:opacity 0.15s;
-  text-shadow:0 1px 2px rgba(0,0,0,0.5);
-}
 .color-swatch.active::after{opacity:1;} */
 
 /* Size pills */

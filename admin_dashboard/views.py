@@ -10,19 +10,18 @@ from django.conf import settings
 from django.urls import reverse
 from django.contrib import messages
 from django.db import IntegrityError
-from django.db.models import Sum, Count, Avg, Q
+from django.db.models import Sum, Count, Avg, Q, FloatField
+from django.db.models.functions import Cast
 from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
 import json
 
 from django.contrib.admin.views.decorators import staff_member_required
-
 from django.views.decorators.http import require_POST
- 
 
 from store.models import Product, ProductVariant, ReviewRating, ProductGallery
-from store.models import Shop          # ← your new Shop model
+from store.models import Shop
 from category.models import Category
 from accounts.models import Account, UserProfile
 from orders.models import Order, OrderProduct, Payment
@@ -63,7 +62,6 @@ def admin_login(request):
         elif not getattr(user, 'is_any_admin', False):
             messages.error(request, 'You do not have admin access.')
         elif user.role == 'shop_owner':
-            # Check shop is approved
             shop = getattr(user, 'shop', None)
             if shop is None:
                 messages.error(request, 'No shop linked to your account. Contact support.')
@@ -73,7 +71,6 @@ def admin_login(request):
                 auth_login(request, user)
                 return redirect('admin_dashboard')
         else:
-            # super admin — straight in
             auth_login(request, user)
             return redirect('admin_dashboard')
 
@@ -91,7 +88,6 @@ def admin_forgot_password(request):
         try:
             user = Account.objects.get(email=email)
             if not getattr(user, 'is_any_admin', False):
-                # Don't reveal that non-admin accounts exist
                 pass
             else:
                 uid   = urlsafe_base64_encode(force_bytes(user.pk))
@@ -113,9 +109,8 @@ def admin_forgot_password(request):
                     fail_silently = True,
                 )
         except Account.DoesNotExist:
-            pass  # silently ignore — don't reveal whether email exists
+            pass
 
-        # Always show the same confirmation to prevent email enumeration
         return render(request, 'admin_panel/password/forgot_password_done.html', {'email': email})
 
     return render(request, 'admin_panel/password/forgot_password.html')
@@ -153,7 +148,6 @@ def admin_reset_password(request, uidb64, token):
     })
 
 
-
 def shop_register(request):
     if request.user.is_authenticated:
         return redirect('admin_dashboard')
@@ -168,7 +162,6 @@ def shop_register(request):
         shop_name   = request.POST.get('shop_name', '').strip()
         shop_desc   = request.POST.get('shop_description', '').strip()
 
-        # Validations
         if password != password2:
             messages.error(request, 'Passwords do not match.')
             return render(request, 'admin_panel/shop_register.html', {'post': request.POST})
@@ -181,13 +174,11 @@ def shop_register(request):
             messages.error(request, 'Password must be at least 8 characters.')
             return render(request, 'admin_panel/shop_register.html', {'post': request.POST})
 
-        # Build slug from shop name
         import re
         slug = re.sub(r'[^a-z0-9]+', '-', shop_name.lower()).strip('-')
         if Shop.objects.filter(slug=slug).exists():
             slug = f"{slug}-{Account.objects.count()}"
 
-        # Create Account
         user = Account.objects.create_user(
             first_name = first_name,
             last_name  = last_name,
@@ -197,11 +188,10 @@ def shop_register(request):
         )
         user.phone_number = phone
         user.role     = 'shop_owner'
-        user.is_admin = True          # needed for login_required
+        user.is_admin = True
         user.is_active = True
         user.save()
 
-        # Create Shop (unapproved until super admin reviews)
         Shop.objects.create(
             owner       = user,
             name        = shop_name,
@@ -245,7 +235,6 @@ def admin_dashboard(request):
     seven_days_ago  = today - timedelta(days=7)
     is_super        = request.user.is_super_admin
 
-    # ── Base querysets scoped to role ──────────────────────────
     if is_super:
         orders_qs   = Order.objects.filter(is_ordered=True)
         products_qs = Product.objects.all()
@@ -253,13 +242,11 @@ def admin_dashboard(request):
         shop        = request.user.shop
         products_qs = Product.objects.filter(shop=shop)
         product_ids = products_qs.values_list('id', flat=True)
-        # Orders that contain at least one of this shop's products
         order_ids   = OrderProduct.objects.filter(
                           ordered=True, product__in=product_ids
                       ).values_list('order_id', flat=True).distinct()
         orders_qs   = Order.objects.filter(id__in=order_ids, is_ordered=True)
 
-    # Summary cards
     total_revenue   = orders_qs.aggregate(total=Sum('order_total'))['total'] or 0
     total_orders    = orders_qs.count()
     total_products  = products_qs.count()
@@ -269,14 +256,12 @@ def admin_dashboard(request):
         orders_qs.values('user').distinct().count()
     )
 
-    # Revenue last 30 days
     revenue_30 = (
         orders_qs
         .filter(created_at__date__gte=thirty_days_ago)
         .aggregate(total=Sum('order_total'))['total'] or 0
     )
 
-    # Sparkline — orders last 7 days
     daily_orders = []
     daily_labels = []
     for i in range(6, -1, -1):
@@ -285,7 +270,6 @@ def admin_dashboard(request):
         daily_orders.append(count)
         daily_labels.append(day.strftime('%a'))
 
-    # Monthly revenue — last 6 months
     monthly_revenue = []
     monthly_labels  = []
     for i in range(5, -1, -1):
@@ -302,12 +286,10 @@ def admin_dashboard(request):
         monthly_revenue.append(float(rev))
         monthly_labels.append(month_start.strftime('%b %Y'))
 
-    # Order status breakdown
     status_data   = orders_qs.values('status').annotate(count=Count('id'))
     status_labels = [s['status'] for s in status_data]
     status_counts = [s['count'] for s in status_data]
 
-    # Top products
     op_filter = {'ordered': True}
     if not is_super:
         op_filter['product__in'] = product_ids
@@ -319,13 +301,9 @@ def admin_dashboard(request):
         .order_by('-total_sold')[:5]
     )
 
-    # Recent orders
     recent_orders = orders_qs.order_by('-created_at')[:8]
+    low_stock     = products_qs.filter(stock__lte=5).order_by('stock')[:5]
 
-    # Low stock (only own products for shop owners)
-    low_stock = products_qs.filter(stock__lte=5).order_by('stock')[:5]
-
-    # Pending shops (super admin only)
     pending_shops = (
         Shop.objects.filter(is_approved=False).select_related('owner')
         if is_super else []
@@ -409,7 +387,6 @@ def product_add(request):
             messages.error(request, 'A product with this slug already exists.')
             return render(request, 'admin_panel/products/form.html', {'categories': categories})
 
-        # Assign shop — super admin can pick any shop, shop owner gets their own
         if request.user.is_super_admin:
             shop_id = request.POST.get('shop') or None
             shop    = Shop.objects.get(pk=shop_id) if shop_id else None
@@ -418,7 +395,6 @@ def product_add(request):
             if shop is None:
                 messages.error(request, 'No shop linked to your account. Contact the super admin.')
                 return redirect('admin_login')
-            products_qs = Product.objects.filter(shop=shop)
 
         product = Product.objects.create(
             product_name = product_name,
@@ -447,15 +423,14 @@ def product_add(request):
 @user_passes_test(is_any_admin, login_url='admin_login')
 def product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
- 
-    # Shop owners can only edit their own products
+
     if not request.user.is_super_admin and product.shop != request.user.shop:
         messages.error(request, 'You do not have permission to edit this product.')
         return redirect('admin_product_list')
- 
+
     categories = Category.objects.all()
-    variants = ProductVariant.objects.filter(product=product)
- 
+    variants   = ProductVariant.objects.filter(product=product)
+
     if request.method == 'POST':
         product.product_name = request.POST.get('product_name')
         product.slug         = request.POST.get('slug')
@@ -467,8 +442,7 @@ def product_edit(request, pk):
         product.save()
         messages.success(request, f'Product "{product.product_name}" updated.')
         return redirect('admin_product_list')
- 
-    # ── NEW: colours already used in variants, for the gallery tag dropdown ──
+
     available_colors = (
         ProductVariant.objects
         .filter(product=product, is_active=True)
@@ -477,7 +451,7 @@ def product_edit(request, pk):
         .distinct()
         .order_by('color')
     )
- 
+
     return render(request, 'admin_panel/products/form.html', {
         'product'          : product,
         'categories'       : categories,
@@ -485,9 +459,8 @@ def product_edit(request, pk):
         'product_gallery'  : ProductGallery.objects.filter(product=product),
         'action'           : 'Edit',
         'is_super'         : request.user.is_super_admin,
-        'available_colors' : available_colors,  # ← NEW
+        'available_colors' : available_colors,
     })
-
 
 
 @login_required(login_url='admin_login')
@@ -507,6 +480,21 @@ def product_delete(request, pk):
     })
 
 
+# ─── Variant stock/price sync helper ──────────────────────────────────────────
+
+def _sync_product_from_variants(product):
+    """
+    Recalculate product.stock and product.price from its active variants.
+    Called after every variant add / edit / delete so the parent product
+    always reflects the true aggregated values.
+    """
+    variants = ProductVariant.objects.filter(product=product, is_active=True)
+    product.stock = sum(v.stock for v in variants)
+    prices = [v.price for v in variants if v.price is not None]
+    product.price = min(prices) if prices else 0
+    product.save(update_fields=['stock', 'price'])
+
+
 # ─── Variants ─────────────────────────────────────────────────────────────────
 
 @login_required(login_url='admin_login')
@@ -521,31 +509,15 @@ def variant_add(request, product_pk):
     if request.method == 'POST':
         try:
             ProductVariant.objects.create(
-                product=product,
-                color=request.POST.get('color', '').strip(),
-                size=request.POST.get('size', '').strip(),
-                sku=request.POST.get('sku', '').strip(),
-                stock=request.POST.get('stock') or 0,
-                price=request.POST.get('price') or None,
-                is_active=request.POST.get('is_active') == 'on',
+                product   = product,
+                color     = request.POST.get('color', '').strip(),
+                size      = request.POST.get('size', '').strip(),
+                sku       = request.POST.get('sku', '').strip(),
+                stock     = request.POST.get('stock') or 0,
+                price     = request.POST.get('price') or None,
+                is_active = request.POST.get('is_active') == 'on',
             )
-
-            # Update product stock and price from variants
-            variants = ProductVariant.objects.filter(
-                product=product,
-                is_active=True
-            )
-
-            product.stock = sum(v.stock for v in variants)
-
-            prices = [
-                v.price for v in variants
-                if v.price is not None
-            ]
-
-            product.price = min(prices) if prices else 0
-            product.save()
-
+            _sync_product_from_variants(product)
             messages.success(request, 'Variant added.')
 
         except IntegrityError:
@@ -556,6 +528,7 @@ def variant_add(request, product_pk):
 
     return redirect('admin_product_edit', pk=product_pk)
 
+
 @login_required(login_url='admin_login')
 @user_passes_test(is_any_admin, login_url='admin_login')
 def variant_edit(request, pk):
@@ -563,6 +536,7 @@ def variant_edit(request, pk):
     if not request.user.is_super_admin and variant.product.shop != request.user.shop:
         messages.error(request, 'Permission denied.')
         return redirect('admin_product_list')
+
     if request.method == 'POST':
         variant.color     = request.POST.get('color', '').strip()
         variant.size      = request.POST.get('size', '').strip()
@@ -572,9 +546,11 @@ def variant_edit(request, pk):
         variant.is_active = request.POST.get('is_active') == 'on'
         try:
             variant.save()
+            _sync_product_from_variants(variant.product)  # ← FIX: sync after edit
             messages.success(request, 'Variant updated.')
         except IntegrityError:
             messages.error(request, 'A variant with that colour/size combination already exists.')
+
     return redirect('admin_product_edit', pk=variant.product.pk)
 
 
@@ -582,11 +558,13 @@ def variant_edit(request, pk):
 @user_passes_test(is_any_admin, login_url='admin_login')
 def variant_delete(request, pk):
     variant    = get_object_or_404(ProductVariant, pk=pk)
-    product_pk = variant.product.pk
-    if not request.user.is_super_admin and variant.product.shop != request.user.shop:
+    product    = variant.product                          # ← FIX: capture before deleting
+    product_pk = product.pk
+    if not request.user.is_super_admin and product.shop != request.user.shop:
         messages.error(request, 'Permission denied.')
         return redirect('admin_product_list')
     variant.delete()
+    _sync_product_from_variants(product)                  # ← FIX: sync after delete
     messages.success(request, 'Variant deleted.')
     return redirect('admin_product_edit', pk=product_pk)
 
@@ -605,15 +583,16 @@ def gallery_add(request, product_pk):
         if not images:
             messages.warning(request, 'No images selected.')
             return redirect('admin_product_edit', pk=product_pk)
-        color = request.POST.get('color', '').strip()  # ← NEW: read colour tag
+        color = request.POST.get('color', '').strip()
         for img in images:
             ProductGallery.objects.create(
-                product=product,
-                image=img,
-                color=color,  # ← NEW: save colour tag on every uploaded image
+                product = product,
+                image   = img,
+                color   = color,
             )
         messages.success(request, f'{len(images)} photo(s) added to gallery.')
     return redirect('admin_product_edit', pk=product_pk)
+
 
 @login_required(login_url='admin_login')
 @user_passes_test(is_any_admin, login_url='admin_login')
@@ -735,7 +714,6 @@ def order_detail(request, pk):
     order          = get_object_or_404(Order, pk=pk)
     order_products = OrderProduct.objects.filter(order=order).select_related('product')
 
-    # Shop owners see only their products within the order
     if not request.user.is_super_admin:
         order_products = order_products.filter(product__shop=request.user.shop)
 
@@ -760,13 +738,13 @@ def order_detail(request, pk):
 def customer_list(request):
     query     = request.GET.get('q', '')
     buyer_ids = Order.objects.filter(is_ordered=True).values_list('user_id', flat=True).distinct()
-    
+
     customers = Account.objects.filter(
         id__in=buyer_ids
     ).exclude(
         role='super_admin'
     ).order_by('-date_joined')
-    
+
     if query:
         customers = customers.filter(
             Q(first_name__icontains=query) |
@@ -919,7 +897,10 @@ def reports(request):
         Payment.objects
         .filter(created_at__date__gte=start_date)
         .values('payment_method')
-        .annotate(count=Count('id'), total=Sum('amount_paid'))
+        .annotate(
+            count=Count('id'),
+            total=Sum(Cast('amount_paid', output_field=FloatField())),
+        )
     ) if is_super else []
 
     return render(request, 'admin_panel/reports.html', {
@@ -988,17 +969,10 @@ def review_delete(request, pk):
 @staff_member_required
 @require_POST
 def admin_gallery_color(request, pk):
-    """
-    PATCH the `color` field of a ProductGallery entry.
-    Called via AJAX from the inline hover-form on the product edit page.
-    Returns HTTP 200 on success so the JS can update the badge without reload.
-    """
     img = get_object_or_404(ProductGallery, pk=pk)
     img.color = request.POST.get('color', '').strip()
     img.save(update_fields=['color'])
- 
-    # If the request came from AJAX return a simple 200; otherwise redirect back.
+
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return HttpResponse(status=200)
     return redirect(request.META.get('HTTP_REFERER', '/'))
- 

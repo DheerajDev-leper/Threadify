@@ -64,7 +64,6 @@ def store(request, category_slug=None):
     products_count = products.count()
 
     # ── Available filter options scoped to current product set ──
-    # MUST be placed before pagination (products is still a queryset here)
     available_sizes = ProductVariant.objects.filter(
         is_active=True,
         product__in=products            # ← scoped to category/filters
@@ -235,7 +234,6 @@ def seller_store(request, shop_slug):
     products_count = products.count()
 
     # ── Available filter options scoped to this shop's products ──
-    # MUST be placed before pagination (products is still a queryset here)
     available_sizes = ProductVariant.objects.filter(
         is_active=True,
         product__in=products            # ← scoped to this seller's products
