@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages, auth
 from accounts.forms import RegistrationForm, UserForm, UserProfileForm
 from accounts.models import Account, UserProfile
@@ -250,8 +250,8 @@ def change_password(request):
 
 @login_required(login_url='login')
 def order_details(request, order_id):
-    order_detail = OrderProduct.objects.filter(order__order_number=order_id)
-    order = Order.objects.get(order_number= order_id, is_ordered=True)
+    order = get_object_or_404(Order, order_number=order_id, is_ordered=True, user=request.user)
+    order_detail = OrderProduct.objects.filter(order=order, user=request.user)
     subtotal = 0
     for i in order_detail:
         subtotal += i.product_price * i.quantity
